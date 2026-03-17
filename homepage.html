@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Costume Palace</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav>
+    <div class="logo">Costume <span>Palace</span></div>
+    <div class="nav-links">
+      <a href="#" class="login" onclick="openLogin()">Login</a>
+      <a href="/ai" class="ai">AI Costume Expert</a>
+    </div>
+  </nav>
+
+  <!-- Hero section -->
+  <div class="hero">
+    <h1>Purim is coming!</h1>
+    <p>The best costumes in Israel - find your perfect look below</p>
+    <a href="#costumes" class="cta">See Costumes ↓</a>
+  </div>
+
+  <!-- Costumes section -->
+  <section class="costumes-section" id="costumes">
+    <h2>Our <span>Costumes</span></h2>
+    <div class="grid" id="costume-grid">
+      <!-- Cards loaded dynamically -->
+    </div>
+  </section>
+
+  <!-- Login modal -->
+  <div class="modal-overlay" id="loginModal">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeModal()">✕</button>
+      <h2>Royal Entry</h2>
+      <p class="auth-sub">Welcome back your highness!</p>
+
+      <form method="POST" action="/login">
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" name="username" placeholder="Enter username" required>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" name="password" placeholder="Enter password" required>
+        </div>
+        <button type="submit" class="submit-btn">Enter Palace</button>
+      </form>
+
+      <p class="auth-switch">
+        No account? <a href="#" onclick="openRegister()">Register here</a>
+      </p>
+    </div>
+  </div>
+
+  <!-- Register modal -->
+  <div class="modal-overlay" id="registerModal">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeModal()">✕</button>
+      <h2>Join the Palace</h2>
+      <p class="auth-sub">Create your account</p>
+
+      <form method="POST" action="/register">
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" name="username" placeholder="Choose a username" required>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" name="password" placeholder="Choose a password" required>
+        </div>
+        <button type="submit" class="submit-btn">Create Account</button>
+      </form>
+
+      <p class="auth-switch">
+        Already have an account? <a href="#" onclick="openLogin()">Login here</a>
+      </p>
+    </div>
+  </div>
+
+  <!-- Product modal -->
+  <div class="modal-overlay" id="productModal">
+    <div class="modal-box product-modal-box">
+      <button class="modal-close" onclick="closeProductModal()">✕</button>
+
+      <div class="product-modal-img">
+        <img id="modal-img" src="" alt="">
+      </div>
+
+      <div class="product-modal-info">
+        <h2 id="modal-name"></h2>
+        <p id="modal-desc"></p>
+        <div class="product-modal-footer">
+          <span id="modal-price" class="card-price"></span>
+        </div>
+      </div>
+
+      <div class="reviews-section">
+        <h3>Reviews</h3>
+        <div id="reviews-list"></div>
+
+        <!-- Review form (only logged in) -->
+        <div id="review-form" style="display:none">
+          <h4>Write a review</h4>
+          <div class="rating-input">
+            <label>Rating:</label>
+            <select id="review-rating">
+              <option value="5">★★★★★</option>
+              <option value="4">★★★★☆</option>
+              <option value="3">★★★☆☆</option>
+              <option value="2">★★☆☆☆</option>
+              <option value="1">★☆☆☆☆</option>
+            </select>
+          </div>
+          <textarea id="review-content" placeholder="Write your review..."></textarea>
+          <button class="add-btn" onclick="submitReview()">Submit Review</button>
+        </div>
+
+        <!-- Shown when not logged in -->
+        <p id="login-to-review" style="display:none">
+          <a href="#" onclick="closeProductModal(); openLogin()">Login</a> to write a review
+        </p>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script>
+    // Read cookies
+    function getCookie(name) {
+      const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+      return match ? match[2] : null;
+    }
+
+    let currentUser = getCookie('username');
+    let isAdmin     = getCookie('is_admin') === '1';
+
+    if (currentUser) {
+      document.querySelector('.nav-links .login').textContent = '👤 ' + currentUser;
+      document.querySelector('.nav-links .login').href = '/logout';
+      if (isAdmin) {
+        document.querySelector('.nav-links').innerHTML +=
+          '<a href="/admin" class="admin-link">⚙️ Admin</a>';
+      }
+    }
+
+    // Login/Register modals
+    function openLogin() { document.getElementById('loginModal').classList.add('active'); document.getElementById('registerModal').classList.remove('active'); }
+    function openRegister() { document.getElementById('registerModal').classList.add('active'); document.getElementById('loginModal').classList.remove('active'); }
+    function closeModal() { document.getElementById('loginModal').classList.remove('active'); document.getElementById('registerModal').classList.remove('active'); }
+
+    document.addEventListener('click', function(e) {
+      if (e.target.classList.contains('modal-overlay')) { closeModal(); closeProductModal(); }
+    });
+
+    // Product modal
+    let currentProductId = null;
+    function openProductModal(productId) {
+      currentProductId = productId;
+      document.getElementById('productModal').classList.add('active');
+      document.getElementById('modal-name').textContent  = 'Loading...';
+      document.getElementById('modal-desc').textContent  = '';
+      document.getElementById('modal-price').textContent = '';
+      document.getElementById('modal-img').src           = '';
+      document.getElementById('reviews-list').innerHTML  = '';
+
+      fetch('/api/product/' + productId)
+        .then(r => r.json())
+        .then(p => {
+          document.getElementById('modal-name').textContent  = p.name;
+          document.getElementById('modal-desc').textContent  = p.description;
+          document.getElementById('modal-price').textContent = '₪' + p.price;
+          document.getElementById('modal-img').src           = '/images/' + p.image;
+        });
+
+      loadReviews(productId);
+
+      if (currentUser) {
+        document.getElementById('review-form').style.display     = 'block';
+        document.getElementById('login-to-review').style.display = 'none';
+      } else {
+        document.getElementById('review-form').style.display     = 'none';
+        document.getElementById('login-to-review').style.display = 'block';
+      }
+    }
+
+    function closeProductModal() { document.getElementById('productModal').classList.remove('active'); }
+
+    // Reviews
+    function loadReviews(productId) {
+      fetch('/api/product/' + productId + '/reviews')
+        .then(r => r.json())
+        .then(reviews => {
+          const list = document.getElementById('reviews-list');
+          list.innerHTML = '';
+          if (reviews.length === 0) { list.textContent = 'No reviews yet. Be the first!'; return; }
+          reviews.forEach(r => {
+            const item = document.createElement('div'); item.className = 'review-item';
+            const header = document.createElement('div'); header.className = 'review-header';
+            const author = document.createElement('span'); author.className = 'review-author'; author.textContent = r.username;
+            const stars = document.createElement('span'); stars.className = 'review-stars'; stars.textContent = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
+            header.appendChild(author); header.appendChild(stars);
+            const content = document.createElement('div'); content.className = 'review-content'; content.innerHTML = r.content; // VULN XSS
+            item.appendChild(header); item.appendChild(content);
+            list.appendChild(item);
+          });
+        });
+    }
+
+    function submitReview() {
+      const content = document.getElementById('review-content').value.trim();
+      const rating  = parseInt(document.getElementById('review-rating').value);
+      if (!content) return;
+      fetch('/api/product/' + currentProductId + '/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: currentUser, content, rating })
+      }).then(() => { document.getElementById('review-content').value = ''; loadReviews(currentProductId); });
+    }
+
+    // Load costume cards
+    fetch('/api/products')
+      .then(res => res.json())
+      .then(products => {
+        const grid = document.getElementById('costume-grid');
+        grid.innerHTML = '';
+        products.forEach(p => {
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.onclick = () => openProductModal(p.id);
+          card.innerHTML = `
+            <div class="card-body">
+              <img src="/images/${p.image}" alt="${p.name} Costume">
+              <div class="card-name">${p.name}</div>
+              <div class="card-desc">${p.description}</div>
+              <div class="card-footer">
+                <span class="card-price">₪${p.price}</span>
+                <button class="add-btn">View</button>
+              </div>
+            </div>`;
+          grid.appendChild(card);
+        });
+      });
+
+  </script>
+
+</body>
+</html>

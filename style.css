@@ -1,0 +1,435 @@
+/* Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: #fff8f0;
+  color: #2d2d2d;
+}
+
+/* NAVBAR */
+nav {
+  background: #ffffff;
+  padding: 1rem 2.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+nav .logo {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.8rem;
+  color: #ff6b35;
+  letter-spacing: 1px;
+}
+
+nav .logo span {
+  color: #a855f7;
+}
+
+nav .nav-links a {
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-left: 1.5rem;
+  padding: 0.5rem 1.2rem;
+  border-radius: 50px;
+  transition: all 0.2s;
+}
+
+/* Login link */
+nav .nav-links a.login {
+  color: #6b7280;
+  border: 2px solid #e5e7eb;
+}
+nav .nav-links a.login:hover {
+  border-color: #a855f7;
+  color: #a855f7;
+}
+
+/* AI Expert link */
+nav .nav-links a.ai {
+  background: linear-gradient(135deg, #a855f7, #6366f1);
+  color: white;
+  border: 2px solid transparent;
+}
+nav .nav-links a.ai:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
+}
+
+/* HERO  */
+.hero {
+  text-align: center;
+  padding: 5rem 2rem 3rem;
+  background: linear-gradient(160deg, #fff0e6 0%, #f5e6ff 50%, #e6f0ff 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  width: 400px; height: 400px;
+  background: rgba(255, 107, 53, 0.12);
+  border-radius: 50%;
+  top: -100px; left: -100px;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  width: 300px; height: 300px;
+  background: rgba(168, 85, 247, 0.12);
+  border-radius: 50%;
+  bottom: -80px; right: -80px;
+}
+
+.hero h1 {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  color: #ff6b35;
+  margin-bottom: 0.75rem;
+  position: relative;
+  z-index: 1;
+}
+
+.hero p {
+  font-size: 1.15rem;
+  color: #6b7280;
+  margin-bottom: 2rem;
+  position: relative;
+  z-index: 1;
+}
+
+.hero .cta {
+  display: inline-block;
+  background: linear-gradient(135deg, #ff6b35, #f59e0b);
+  color: white;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 0.85rem 2.2rem;
+  border-radius: 50px;
+  box-shadow: 0 4px 20px rgba(255, 107, 53, 0.35);
+  transition: all 0.2s;
+  position: relative;
+  z-index: 1;
+}
+
+.hero .cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(255, 107, 53, 0.5);
+}
+
+/* COSTUMES SECTION */
+.costumes-section {
+  padding: 3rem 2rem 5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.costumes-section h2 {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.8rem;
+  color: #2d2d2d;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.costumes-section h2 span {
+  color: #ff6b35;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Each costume card */
+.card {
+  background: white;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+}
+
+.card img {
+  width: 100%;
+  height: 310px;
+  object-fit: cover;
+}
+
+.card .card-body {
+  padding: 1rem 1.25rem 1.25rem;
+}
+
+.card .card-name {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.2rem;
+  color: #2d2d2d;
+  margin-bottom: 0.3rem;
+}
+
+.card .card-desc {
+  font-size: 0.82rem;
+  color: #9ca3af;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+
+.card .card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card .card-price {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #ff6b35;
+}
+
+.card .add-btn {
+  background: linear-gradient(135deg, #a855f7, #6366f1);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  padding: 0.45rem 1rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  transition: all 0.2s;
+}
+
+.card .add-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 3px 12px rgba(168, 85, 247, 0.4);
+}
+
+/* MODAL */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-overlay.active {
+  display: flex;
+}
+
+.modal-box {
+  background: white;
+  border-radius: 24px;
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 460px;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.modal-box h2 {
+  font-family: 'Fredoka One', cursive;
+  font-size: 2rem;
+  color: #ff6b35;
+  text-align: center;
+  margin-bottom: 0.25rem;
+}
+
+.modal-box .auth-sub {
+  text-align: center;
+  color: #9ca3af;
+  margin-bottom: 2rem;
+  font-size: 0.95rem;
+}
+
+.modal-box .form-group label { color: #6b7280; }
+
+.modal-box .form-group input {
+  background: #fff8f0;
+  border: 2px solid #e5e7eb;
+  color: #2d2d2d;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-family: 'Nunito', sans-serif;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.modal-box .form-group input:focus { border-color: #a855f7; }
+
+.modal-box .submit-btn {
+  width: 100%;
+  padding: 0.85rem;
+  background: linear-gradient(135deg, #ff6b35, #f59e0b);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: 'Nunito', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 0.5rem;
+}
+
+.modal-box .submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+}
+
+.modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1.25rem;
+  background: none;
+  border: none;
+  color: #9ca3af;
+  font-size: 1.3rem;
+  cursor: pointer;
+}
+
+.modal-close:hover { color: #ff6b35; }
+
+.modal-box .auth-switch {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+  color: #9ca3af;
+}
+
+.modal-box .auth-switch a {
+  color: #a855f7;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+/* PRODUCT MODAL */
+.product-modal-box {
+  max-width: 580px;
+  padding: 0;
+  overflow: hidden;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.product-modal-img img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.product-modal-info {
+  padding: 1.5rem 2rem;
+}
+
+.product-modal-info h2 {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.8rem;
+  color: #ff6b35;
+  margin-bottom: 0.5rem;
+  text-align: left;
+}
+
+.product-modal-info p {
+  color: #6b7280;
+  margin-bottom: 1.25rem;
+  line-height: 1.6;
+}
+
+.product-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* REVIEWS */
+.reviews-section {
+  padding: 1.5rem 2rem 2rem;
+  border-top: 2px solid #fff0e6;
+}
+
+.reviews-section h3 {
+  font-family: 'Fredoka One', cursive;
+  font-size: 2rem;
+  color: #2d2d2d;
+  margin-bottom: 1rem;
+}
+
+.reviews-section h4 {
+  font-family: 'Fredoka One', cursive;
+  color: #ff6b35;
+  margin: 1.25rem 0 0.75rem;
+}
+
+.review-item {
+  padding: 0.85rem 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.3rem;
+}
+
+.review-author { font-weight: 700; font-size: 0.85rem; color: #a855f7; }
+.review-stars  { color: #f59e0b; font-size: 0.85rem; }
+.review-content { font-size: 0.9rem; color: #6b7280; line-height: 1.5; }
+
+.rating-input {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.rating-input label { font-weight: 700; font-size: 0.85rem; color: #6b7280; }
+
+.rating-input select {
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.3rem 0.6rem;
+  font-family: 'Nunito', sans-serif;
+  outline: none;
+}
+
+#review-content {
+  width: 100%;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 0.75rem;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.9rem;
+  resize: vertical;
+  min-height: 80px;
+  outline: none;
+  margin-bottom: 0.75rem;
+  display: block;
+}
+
+#review-content:focus { border-color: #a855f7; }
+
+#login-to-review { color: #9ca3af; font-size: 0.9rem; margin-top: 1rem; font-style: italic; }
+#login-to-review a { color: #a855f7; font-weight: 700; text-decoration: none; }

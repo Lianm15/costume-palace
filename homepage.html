@@ -13,6 +13,7 @@
     <div class="nav-links">
       <a href="#" class="login" onclick="openLogin()">Login</a>
       <a href="/ai" class="ai">AI Costume Expert</a>
+      <a href="/cart" class="cart">Cart</a>
     </div>
   </nav>
 
@@ -140,8 +141,12 @@
     let isAdmin     = getCookie('is_admin') === '1';
 
     if (currentUser) {
-      document.querySelector('.nav-links .login').textContent = '👤 ' + currentUser;
-      document.querySelector('.nav-links .login').href = '/logout';
+      const loginBtn = document.querySelector('.nav-links .login');
+
+      loginBtn.textContent = '👤 ' + currentUser;
+      loginBtn.href = '/profile';    
+      loginBtn.onclick = null;
+       
       if (isAdmin) {
         document.querySelector('.nav-links').innerHTML +=
           '<a href="/admin" class="admin-link">⚙️ Admin</a>';
@@ -222,6 +227,14 @@
       }).then(() => { document.getElementById('review-content').value = ''; loadReviews(currentProductId); });
     }
 
+    function addToCart(productId) {
+      fetch('/api/cart/add', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ product_id: productId })
+      });
+    }
+
     // Load costume cards
     fetch('/api/products')
       .then(res => res.json())
@@ -240,6 +253,7 @@
               <div class="card-footer">
                 <span class="card-price">₪${p.price}</span>
                 <button class="add-btn">View</button>
+                <button class="add-btn" onclick="addToCart(${p.id})">Add to Cart</button>
               </div>
             </div>`;
           grid.appendChild(card);

@@ -440,4 +440,187 @@ nav .nav-links a.ai:hover {
 #review-content:focus { border-color: #a855f7; }
 
 #login-to-review { color: #9ca3af; font-size: 0.9rem; margin-top: 1rem; font-style: italic; }
+
 #login-to-review a { color: #a855f7; font-weight: 700; text-decoration: none; }
+
+.checkout{
+  position: fixed;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.checkout-btn{
+  width: 150px;
+  height: 70px;
+  font-size: 20px;
+  font-family: 'Nunito', sans-serif;
+  background: linear-gradient(135deg, #a855f7, #6366f1);
+  color: white;
+  border-radius: 20px;
+  border: none;
+  font-weight: 700;
+  transition:all 0.2s;
+  cursor: pointer;
+  padding: 0.45rem 1rem;
+}
+
+.checkout-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 3px 12px rgba(168, 85, 247, 0.4);
+}
+
+.checkout-container{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  padding-top: 20px;
+}
+
+.summary-box{
+  background: linear-gradient(135deg, #fff8f0, #ffffff);
+  padding: 2rem;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  border: 2px solid #fff0e6;
+  width:80%;
+}
+
+.summary-box h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: #ff6b35;
+}
+
+.summary-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.summary-item img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.divider {
+  border: none;
+  height: 2px;
+  background: linear-gradient(90deg, #a855f7, #6366f1, #a855f7);
+  margin: 2rem 0;
+}
+
+.input-box{
+  padding-top: 1rem;
+  display: flex;
+  gap: 40px;
+  justify-content: space-between;   
+  max-width: 900px;           
+}
+
+.text-box{
+  border-radius: 5px;
+  border: 2px solid #fff0e6;
+  font-size: 12px;
+  height: 25px;
+  width: 40%;
+}
+
+.text-box:hover{
+  border-color: #ff6b35;
+  outline: none;
+}
+
+.text-box:focus{
+  border-color: #ff6b35;
+  outline: none;
+}
+
+.personal-details{
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 400px;
+  
+}
+
+.card-details{
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 400px;
+}
+
+.submit-order{
+  padding-top: 30px;
+}
+
+.submit-btn{
+  width: 200px;
+  height: 50px;
+  font-size: 20px;
+  font-family: 'Nunito', sans-serif;
+  background: linear-gradient(135deg, #a855f7, #6366f1);
+  color: white;
+  border-radius: 10px;
+  border: none;
+  font-weight: 700;
+  transition:all 0.2s;
+  cursor: pointer;
+  padding: 0.45rem 1rem;
+}
+
+.submit-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 3px 12px rgba(168, 85, 247, 0.4);
+}
+
+.order-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.order-item img {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+}
+
+.order-box {
+  background: white;
+  padding: 1rem;
+  border-radius: 15px;
+  margin-bottom: 15px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+}
+
+
+.field {
+  display: flex;
+  flex-direction: column;
+}
+
+.error-msg {
+  color: red;
+  font-size: 12px;
+  margin-top: 3px;
+  min-height: 14px;
+}
+
+.input-error {
+  border-color: red !important;
+}
+
+
+
+
+#login-to-review a { color: #a855f7; font-weight: 700; text-decoration: none; }
+

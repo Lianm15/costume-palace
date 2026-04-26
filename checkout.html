@@ -32,9 +32,18 @@
                 <div class="card-details">
                 <h4 style="padding-top: 1rem;">Credit Card Details</h4>
                 <input type="text" class="text-box" placeholder="Card Owner Name">
-                <input type="text" class="text-box" placeholder="Credit Card Number">
-                <input type="text" class="text-box" placeholder="Expire Date">
-                <input type="text" class="text-box" placeholder="CVV">
+                <div class="field">
+                    <input type="text" class="text-box" id="creditcard-number" placeholder="Credit Card Number">
+                    <small class="error-msg" id="card-error"></small>
+                </div>
+                <div class="field">
+                    <input type="text" class="text-box" id="date-number" placeholder="MM/YY">
+                    <small class="error-msg" id="date-error"></small>
+                </div>
+                <div class="field">
+                    <input type="text" class="text-box" id="cvv-number" placeholder="CVV">
+                    <small class="error-msg" id="cvv-error"></small>
+                </div>
                 </div>
             </div>
             <div class="submit-order">
@@ -68,7 +77,113 @@
             document.getElementById('total').textContent = "Total: ₪" + total;
         });
 
+        const cardInput = document.getElementById("creditcard-number");
+
+        cardInput.addEventListener("input", (e) => {
+        let value = e.target.value.replace(/\D/g, "");
+
+  
+        value = value.match(/.{1,4}/g)?.join(" ") || value;
+
+        e.target.value = value.slice(0,19);
+
+        validateCardNumber();
+        });
+
+        function validateCardNumber() {
+        const raw = cardInput.value.replace(/\s/g, "");
+        const error = document.getElementById("card-error");
+
+        if (raw.length < 16) {
+            error.textContent = "Card must be 16 digits";
+            cardInput.classList.add("input-error");
+            return false;
+        }
+
+        if (!/^\d+$/.test(raw)) {
+        error.textContent = "Only numbers allowed";
+            cardInput.classList.add("input-error");
+            return false;
+        }
+
+        error.textContent = "";
+        cardInput.classList.remove("input-error");
+        return true;
+        }
+
+        const dateInput = document.getElementById("date-number");
+
+        dateInput.addEventListener("input", (e) => {
+        let value = e.target.value.replace(/\D/g, "");
+
+        if (value.length >= 2) {
+            value = value.slice(0,2) + "/" + value.slice(2,4);
+        }
+
+        e.target.value = value.slice(0,5);
+        });
+
+        dateInput.addEventListener("blur", validateDate);
+
+        function validateDate() {
+        const value = dateInput.value;
+        const error = document.getElementById("date-error");
+
+        if (!/^\d{2}\/\d{2}$/.test(value)) {
+            error.textContent = "Format must be MM/YY";
+            dateInput.classList.add("input-error");
+            return false;
+        }
+
+        const [month, year] = value.split('/').map(Number);
+
+        if (month < 1 || month > 12) {
+            error.textContent = "Invalid month";
+            dateInput.classList.add("input-error");
+            return false;
+        }
+
+        const now = new Date();
+        const currentYear = now.getFullYear() % 100;
+        const currentMonth = now.getMonth() + 1;
+
+        if (year < currentYear || (year === currentYear && month < currentMonth)) {
+            error.textContent = "Card expired";
+            dateInput.classList.add("input-error");
+            return false;
+        }
+
+        error.textContent = "";
+        dateInput.classList.remove("input-error");
+        return true;
+        }
+
+        const cvvInput = document.getElementById("cvv-number");
+
+        cvvInput.addEventListener("input", validateCVV);
+
+        function validateCVV() {
+        const value = cvvInput.value;
+        const error = document.getElementById("cvv-error");
+
+        if (!/^\d{3}$/.test(value)) {
+            error.textContent = "CVV must be 3 digits";
+            cvvInput.classList.add("input-error");
+            return false;
+        }
+
+        error.textContent = "";
+        cvvInput.classList.remove("input-error");
+        return true;
+        }
+
         function submitOrder(){
+            const validCard = validateCardNumber();
+            const validDate = validateDate();
+            const validCVV  = validateCVV();
+
+            if (!validCard || !validDate || !validCVV) return;
+
             const btn = document.querySelector('.submit-btn');
             btn.textContent = "Processing...";
 

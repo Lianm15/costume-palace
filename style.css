@@ -153,6 +153,13 @@ nav .nav-links a.ai:hover {
   gap: 1.5rem;
 }
 
+.cart-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+  padding: 0 20px; 
+}
+
 /* Each costume card */
 .card {
   background: white;
@@ -221,6 +228,7 @@ nav .nav-links a.ai:hover {
   transform: scale(1.05);
   box-shadow: 0 3px 12px rgba(168, 85, 247, 0.4);
 }
+
 
 /* MODAL */
 .modal-overlay {
@@ -433,184 +441,3 @@ nav .nav-links a.ai:hover {
 
 #login-to-review { color: #9ca3af; font-size: 0.9rem; margin-top: 1rem; font-style: italic; }
 #login-to-review a { color: #a855f7; font-weight: 700; text-decoration: none; }
-
-/* ── CHALLENGES DRAWER ── */
-.drawer-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.4);
-  z-index: 1000;
-}
-.drawer-overlay.active { display: block; }
-
-.drawer {
-  position: fixed;
-  top: 0;
-  right: -500px;
-  width: 460px;
-  max-width: 95vw;
-  height: 100vh;
-  background: #ffffff;
-  z-index: 1001;
-  overflow-y: auto;
-  transition: right 0.35s ease;
-  padding: 28px 24px;
-  box-sizing: border-box;
-  box-shadow: -8px 0 40px rgba(0,0,0,0.12);
-}
-.drawer.open { right: 0; }
-
-.drawer-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 6px;
-}
-.drawer-header h2 {
-  font-family: 'Fredoka One', cursive;
-  font-size: 1.8rem;
-  color: #ff6b35;
-  margin: 0;
-}
-.drawer-close {
-  background: none;
-  border: none;
-  color: #9ca3af;
-  font-size: 1.3rem;
-  cursor: pointer;
-  transition: color 0.2s;
-}
-.drawer-close:hover { color: #ff6b35; }
-
-.drawer-progress-wrap {
-  background: #f3f4f6;
-  border-radius: 20px;
-  height: 10px;
-  margin: 14px 0 4px;
-  overflow: hidden;
-}
-.drawer-progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #ff6b35, #f59e0b);
-  border-radius: 20px;
-  transition: width 0.6s ease;
-}
-.drawer-progress-label {
-  font-size: 0.82rem;
-  color: #9ca3af;
-  margin-bottom: 20px;
-}
-
-.challenge-card {
-  background: #fff8f0;
-  border-radius: 16px;
-  padding: 16px;
-  margin-bottom: 12px;
-  border-left: 4px solid #ff6b35;
-  transition: transform 0.15s, box-shadow 0.15s;
-}
-.challenge-card:hover {
-  transform: translateX(3px);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.07);
-}
-.challenge-card.solved { border-left-color: #22c55e; opacity: 0.7; }
-
-.challenge-card-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.challenge-name { font-weight: 700; font-size: 0.98rem; color: #2d2d2d; }
-.challenge-meta { display: flex; align-items: center; gap: 8px; }
-.challenge-diff {
-  font-size: 0.75rem;
-  background: #f3f4f6;
-  color: #6b7280;
-  padding: 2px 9px;
-  border-radius: 20px;
-}
-.solved-badge { font-size: 0.7rem; font-weight: 700; color: #22c55e; letter-spacing: 0.5px; }
-
-.hint-btn {
-  background: transparent;
-  border: 2px solid #a855f7;
-  color: #a855f7;
-  padding: 4px 14px;
-  border-radius: 50px;
-  cursor: pointer;
-  font-size: 0.78rem;
-  font-weight: 700;
-  font-family: 'Nunito', sans-serif;
-  margin-top: 10px;
-  transition: background 0.2s, color 0.2s;
-}
-.hint-btn:hover { background: #a855f7; color: white; }
-.hint-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-
-.hints-list { margin-top: 8px; display: flex; flex-direction: column; gap: 6px; }
-.hint-item {
-  background: white;
-  border-left: 3px solid #a855f7;
-  border-radius: 8px;
-  padding: 8px 12px;
-  font-size: 0.84rem;
-  color: #6b7280;
-  animation: fadeSlide 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-}
-.hint-num { color: #a855f7; font-size: 0.7rem; font-weight: 700; margin-bottom: 2px; }
-
-@keyframes fadeSlide {
-  from { opacity: 0; transform: translateY(-5px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* ── TOAST ── */
-.toast {
-  position: fixed;
-  bottom: 30px;
-  left: 50%;
-  transform: translateX(-50%) translateY(80px);
-  background: white;
-  border: 2px solid #22c55e;
-  color: #2d2d2d;
-  padding: 14px 28px;
-  border-radius: 50px;
-  font-size: 0.95rem;
-  font-weight: 700;
-  font-family: 'Nunito', sans-serif;
-  z-index: 9999;
-  opacity: 0;
-  transition: transform 0.4s ease, opacity 0.4s ease;
-  pointer-events: none;
-  box-shadow: 0 8px 30px rgba(34,197,94,0.25);
-}
-.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-
-/* ── NAV EXTRA LINKS ── */
-nav .nav-links a.challenges-link {
-  color: #a855f7;
-  border: 2px solid #a855f7;
-}
-nav .nav-links a.challenges-link:hover { background: #a855f7; color: white; }
-
-nav .nav-links a.admin-link {
-  background: linear-gradient(135deg, #ff6b35, #f59e0b);
-  color: white;
-  border: 2px solid transparent;
-}
-nav .nav-links a.admin-link:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(255,107,53,0.4);
-}
-
-#challenges-badge {
-  background: #f3f4f6;
-  color: #6b7280;
-  font-size: 0.7rem;
-  font-weight: 700;
-  padding: 2px 7px;
-  border-radius: 20px;
-  margin-left: 4px;
-}

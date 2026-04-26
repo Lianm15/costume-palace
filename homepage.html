@@ -102,7 +102,6 @@
       <div class="reviews-section">
         <h3>Reviews</h3>
         <div id="reviews-list"></div>
-
         <!-- Review form (only logged in) -->
         <div id="review-form" style="display:none">
           <h4>Write a review</h4>
@@ -244,15 +243,13 @@
         products.forEach(p => {
           const card = document.createElement('div');
           card.className = 'card';
-          card.onclick = () => openProductModal(p.id);
           card.innerHTML = `
             <div class="card-body">
-              <img src="/images/${p.image}" alt="${p.name} Costume">
-              <div class="card-name">${p.name}</div>
+              <img src="/images/${p.image}" alt="${p.name} Costume" onclick="openProductModal(${p.id})">
+              <div class="card-name" onclick="openProductModal(${p.id})">${p.name}</div>
               <div class="card-desc">${p.description}</div>
               <div class="card-footer">
                 <span class="card-price">₪${p.price}</span>
-                <button class="add-btn">View</button>
                 <button class="add-btn" onclick="addToCart(${p.id})">Add to Cart</button>
               </div>
             </div>`;

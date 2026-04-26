@@ -229,6 +229,7 @@ nav .nav-links a.ai:hover {
   box-shadow: 0 3px 12px rgba(168, 85, 247, 0.4);
 }
 
+
 /* MODAL */
 .modal-overlay {
   display: none;
@@ -600,4 +601,24 @@ nav .nav-links a.ai:hover {
   box-shadow: 0 6px 20px rgba(0,0,0,0.08);
 }
 
+
+.logout-btn{
+  width: 200px;
+  height: 50px;
+  font-size: 20px;
+  font-family: 'Nunito', sans-serif;
+  background: linear-gradient(135deg, #a855f7, #6366f1);
+  color: white;
+  border-radius: 10px;
+  border: none;
+  font-weight: 700;
+  transition:all 0.2s;
+  cursor: pointer;
+  padding: 0.45rem 1rem;
+}
+
+.logout-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 3px 12px rgba(168, 85, 247, 0.4);
+}
 

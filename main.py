@@ -300,4 +300,3 @@ def get_order_items(order_id: int):
     db.close()
     return JSONResponse([dict(i) for i in items])
 
-

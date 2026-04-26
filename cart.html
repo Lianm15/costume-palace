@@ -70,7 +70,7 @@ function loadCart() {
       });
 
       
-      document.getElementById('total').textContent = "Total: ₪" + total;
+      document.getElementById('total').textContent = "Total: ₪" + total.toFixed(2);
     })
     .catch(err => console.error(err)); 
 }

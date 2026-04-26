@@ -23,11 +23,20 @@
             <div class="input-box">
                 <div class="personal-details">
                 <h4 style="padding-top: 1rem;">Your Details</h4>
-                <input type="text" class="text-box" placeholder="Name">
-                <input type="text" class="text-box" placeholder="Phone Number">
-                <input type="email" class="text-box" placeholder="Email">
-                <input type="text" class="text-box" placeholder="Address">
-                <input type="text" class="text-box" placeholder="Postal Code">
+                <input type="text" class="text-box" id="chk-name" placeholder="Name" style="width: 100%;">
+                <div class="field">
+                    <input type="text" class="text-box" id="chk-phone" placeholder="Phone Number" style="width: 100%;">
+                    <small class="error-msg" id="phone-error"></small>
+                </div>
+                <div class="field">
+                    <input type="email" class="text-box" id="chk-email" placeholder="Email" style="width: 100%;">
+                    <small class="error-msg" id="email-error"></small>
+                </div>
+                <input type="text" class="text-box" id="chk-address" placeholder="Address" style="width: 100%;">
+                <div class="field">
+                    <input type="text" class="text-box" id="chk-postal" placeholder="Postal Code (7 digits)" style="width: 100%;">
+                    <small class="error-msg" id="postal-error"></small>
+                </div>
                 </div>
                 <div class="card-details">
                 <h4 style="padding-top: 1rem;">Credit Card Details</h4>
@@ -56,9 +65,11 @@
     </div>
 
     <script>
+        let cartItems = [];
         fetch('/api/cart/')
         .then(r => r.json())
         .then(items => {
+            cartItems = items;
             const summary = document.getElementById('summary');
             summary.innerHTML = '';
 
@@ -182,15 +193,52 @@
             const validDate = validateDate();
             const validCVV  = validateCVV();
 
-            if (!validCard || !validDate || !validCVV) return;
+            const phone = document.getElementById('chk-phone').value;
+            const email = document.getElementById('chk-email').value;
+            const postal = document.getElementById('chk-postal').value;
+            
+            let valid = true;
+            if (!/^0\d{9}$/.test(phone)) {
+                document.getElementById('phone-error').textContent = 'Must be 10 digits starting with 0';
+                valid = false;
+            } else { document.getElementById('phone-error').textContent = ''; }
+            
+            if (!email.endsWith('@gmail.com')) {
+                document.getElementById('email-error').textContent = 'Must be a @gmail.com email';
+                valid = false;
+            } else { document.getElementById('email-error').textContent = ''; }
+            
+            if (!/^\d{7}$/.test(postal)) {
+                document.getElementById('postal-error').textContent = 'Must be 7 digits';
+                valid = false;
+            } else { document.getElementById('postal-error').textContent = ''; }
+
+            if (!validCard || !validDate || !validCVV || !valid) return;
+            
+            if (cartItems.length === 0) {
+                alert("Your cart is empty!");
+                return;
+            }
 
             const btn = document.querySelector('.submit-btn');
             btn.textContent = "Processing...";
 
-            fetch('/api/checkout', {method: 'POST'}).then(r => r.json()).then(data => {
-                alert("Order Completed");
-                window.location.href="/";
-            })
+            fetch('/api/checkout', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({phone, email, postal})
+            }).then(r => r.json()).then(data => {
+                if (data.error) {
+                    alert(data.error);
+                    btn.textContent = "Submit Order";
+                } else {
+                    alert("Order Completed");
+                    window.location.href="/";
+                }
+            }).catch(e => {
+                alert("An error occurred");
+                btn.textContent = "Submit Order";
+            });
         }
     </script>
 

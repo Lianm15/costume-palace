@@ -171,6 +171,65 @@ async def post_review(product_id: int, request: Request):
     return JSONResponse({"ok": True})
 
 
+# --- CHECKOUT APIs ---
+
+@app.get("/checkout")
+def serve_checkout(username: Optional[str] = Cookie(None)):
+    if not username:
+        return RedirectResponse("/", status_code=303)
+    with open("checkout.html", encoding="utf-8") as f:
+        return HTMLResponse(f.read())
+
+@app.post("/api/checkout")
+async def handle_checkout(request: Request):
+    username = request.cookies.get("username")
+    if not username:
+        return JSONResponse({"error": "unauthorized"}, status_code=403)
+    
+    try:
+        body = await request.json()
+    except:
+        body = {}
+        
+    phone = body.get("phone", "")
+    email = body.get("email", "")
+    postal = body.get("postal", "")
+    
+    if not phone or not phone.startswith("0") or len(phone) != 10 or not phone.isdigit():
+        return JSONResponse({"error": "Invalid phone number"}, status_code=400)
+    if not email or not email.endswith("@gmail.com"):
+        return JSONResponse({"error": "Invalid email address"}, status_code=400)
+    if not postal or len(postal) != 7 or not postal.isdigit():
+        return JSONResponse({"error": "Invalid postal code"}, status_code=400)
+    
+    db = get_db()
+    items = db.execute("""
+        SELECT c.quantity, p.id as product_id, p.price 
+        FROM cart c 
+        JOIN products p ON c.product_id = p.id 
+        WHERE c.username = ?
+    """, (username,)).fetchall()
+    
+    if not items:
+        db.close()
+        return JSONResponse({"error": "Cart is empty"}, status_code=400)
+    
+    total = sum(i["quantity"] * i["price"] for i in items)
+    
+    cursor = db.execute("INSERT INTO orders (username, total, status) VALUES (?,?,?)", (username, total, "Pending"))
+    order_id = cursor.lastrowid
+    
+    for i in items:
+        db.execute("INSERT INTO order_items (order_id, product_id, quantity) VALUES (?,?,?)", 
+                   (order_id, i["product_id"], i["quantity"]))
+                   
+    db.execute("DELETE FROM cart WHERE username=?", (username,))
+    db.commit()
+    db.close()
+    
+    return JSONResponse({"ok": True, "order_id": order_id})
+
+
 # --- CART APIs ---
 
 @app.get("/cart")
@@ -218,11 +277,57 @@ def remove_from_cart(cart_id: int, request: Request):
     username = request.cookies.get("username")
     if not username:
         return JSONResponse({"error": "Unauthorized"}, status_code=403)
+    
     db = get_db()
-    db.execute("DELETE FROM cart WHERE id=? AND username=?", (cart_id, username))
+    row = db.execute("SELECT quantity FROM cart WHERE id=? AND username=?", (cart_id, username)).fetchone()
+    if not row:
+        db.close()
+        return JSONResponse({"error": "item not found"}, status_code=404)
+        
+    if row["quantity"] > 1:
+        db.execute("UPDATE cart SET quantity = ? WHERE id=?", (row["quantity"] - 1, cart_id))
+    else:
+        db.execute("DELETE FROM cart WHERE id=?", (cart_id,))
+        
     db.commit()
     db.close()
     return JSONResponse({"ok": True})
+
+
+# --- ORDER APIs (for user profile) ---
+@app.get("/api/orders")
+def get_orders(request: Request):
+    username = request.cookies.get("username")
+    if not username:
+        return JSONResponse([])
+
+    db = get_db()
+    orders = db.execute("SELECT * FROM orders WHERE username=?", (username,)).fetchall()
+    db.close()
+
+    return JSONResponse([dict(o) for o in orders])
+
+@app.get("/api/orders/{order_id}")
+def get_order_items(order_id: int, request: Request):
+    username = request.cookies.get("username")
+    if not username:
+        return JSONResponse([])
+
+    db = get_db()
+    order = db.execute("SELECT * FROM orders WHERE id=? AND username=?", (order_id, username)).fetchone()
+    if not order:
+        db.close()
+        return JSONResponse([])
+
+    items = db.execute("""
+        SELECT products.name, products.image, products.price, order_items.quantity
+        FROM order_items
+        JOIN products ON order_items.product_id = products.id
+        WHERE order_items.order_id=?
+    """, (order_id,)).fetchall()
+
+    db.close()
+    return JSONResponse([dict(i) for i in items])
 
 
 # --- ADMIN APIs ---

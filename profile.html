@@ -80,32 +80,46 @@ fetch('/api/orders', {
     }
 
     data.forEach(o => {
-  const box = document.createElement('div');
-  box.className = 'order-box';
+      const box = document.createElement('div');
+      box.className = 'order-box';
+      
+      const statusColor = o.status === 'Pending' ? '#f59e0b' : o.status === 'Approved' ? '#3b82f6' : o.status === 'Shipped' ? '#10b981' : '#ef4444';
+      const dateStr = o.created_at ? new Date(o.created_at).toLocaleString() : 'N/A';
 
-  box.innerHTML = `
-    <p><strong>Order #${o.id}</strong></p>
-    <p>Total: ₪${o.total}</p>
-    <div id="items-${o.id}"></div>
-  `;
-
-  document.getElementById('orders').appendChild(box);
-
-  // load items
-  fetch('/api/orders/' + o.id)
-    .then(r => r.json())
-    .then(items => {
-      const itemsDiv = document.getElementById('items-' + o.id);
-
-      items.forEach(item => {
-        itemsDiv.innerHTML += `
-          <div class="order-item">
-            <img src="/images/${item.image}">
-            <span>${item.name} x ${item.quantity}</span>
+      box.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f3f4f6; padding-bottom:10px; margin-bottom:15px;">
+          <div>
+            <h3 style="margin:0; color:#ff6b35; font-family:'Fredoka One',cursive;">Order #${o.id}</h3>
+            <small style="color:#9ca3af;">${dateStr}</small>
           </div>
-        `;
-      });
-    });
+          <div style="text-align:right;">
+            <span style="background:${statusColor}; color:white; padding:4px 10px; border-radius:15px; font-weight:700; font-size:0.85rem;">${o.status || 'Pending'}</span>
+            <p style="margin:8px 0 0 0; font-weight:700; font-size:1.1rem; color:#2d2d2d;">Total: ₪${o.total}</p>
+          </div>
+        </div>
+        <div id="items-${o.id}" style="display:flex; flex-direction:column; gap:12px;"></div>
+      `;
+
+      document.getElementById('orders').appendChild(box);
+
+      // load items
+      fetch('/api/orders/' + o.id)
+        .then(r => r.json())
+        .then(items => {
+          const itemsDiv = document.getElementById('items-' + o.id);
+
+          items.forEach(item => {
+            itemsDiv.innerHTML += `
+              <div class="order-item" style="display:flex; align-items:center; gap:15px; background:#fff8f0; padding:10px 15px; border-radius:12px; border:1px solid #fff0e6;">
+                <img src="/images/${item.image}" style="width:60px; height:60px; object-fit:cover; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+                <div style="flex:1;">
+                  <strong style="color:#2d2d2d; font-size:1.05rem;">${item.name}</strong>
+                  <div style="color:#6b7280; font-size:0.9rem; margin-top:4px;">Qty: ${item.quantity} · ₪${item.price} each</div>
+                </div>
+              </div>
+            `;
+          });
+        });
     });
   });
 </script>

@@ -80,7 +80,8 @@ def init_db():
         CREATE TABLE IF NOT EXISTS orders (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT,
-            total REAL
+            total REAL,
+            status TEXT DEFAULT 'Pending'
         )
     """)
 

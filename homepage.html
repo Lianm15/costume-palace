@@ -232,11 +232,54 @@
       }).then(() => { document.getElementById('review-content').value = ''; loadReviews(currentProductId); });
     }
 
-    function addToCart(productId) {
+    function addToCart(productId, btnElement) {
+      if(!currentUser) {
+        openLogin();
+        return;
+      }
+      
+      const originalText = btnElement ? btnElement.innerText : 'Add to Cart';
+      if (btnElement) {
+        btnElement.innerText = 'Adding...';
+        btnElement.disabled = true;
+      }
+      
       fetch('/api/cart/add', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ product_id: productId })
+      })
+      .then(r => r.json())
+      .then(data => {
+        if(data.error) {
+           openLogin();
+           if (btnElement) {
+             btnElement.innerText = originalText;
+             btnElement.disabled = false;
+           }
+        } else {
+           if (btnElement) {
+             btnElement.innerText = 'Added! ✔️';
+             btnElement.style.background = '#10b981'; // green
+             setTimeout(() => {
+               btnElement.innerText = originalText;
+               btnElement.disabled = false;
+               btnElement.style.background = '';
+             }, 2000);
+           }
+           
+           const toast = document.getElementById('toast');
+           toast.textContent = 'Added to Cart! 🛒';
+           toast.classList.add('show');
+           setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+      })
+      .catch(e => {
+         console.error("Error adding to cart", e);
+         if (btnElement) {
+           btnElement.innerText = originalText;
+           btnElement.disabled = false;
+         }
       });
     }
 
@@ -256,7 +299,7 @@
               <div class="card-desc">${p.description}</div>
               <div class="card-footer">
                 <span class="card-price">₪${p.price}</span>
-                <button class="add-btn" onclick="addToCart(${p.id})">Add to Cart</button>
+                <button class="add-btn" onclick="addToCart(${p.id}, this)">Add to Cart</button>
               </div>
             </div>`;
           grid.appendChild(card);

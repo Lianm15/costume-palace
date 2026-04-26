@@ -624,3 +624,28 @@ nav .nav-links a.ai:hover {
 
 #login-to-review a { color: #a855f7; font-weight: 700; text-decoration: none; }
 
+/* TOAST NOTIFICATION */
+.toast {
+  visibility: hidden;
+  min-width: 250px;
+  background: linear-gradient(135deg, #a855f7, #6366f1);
+  color: #fff;
+  text-align: center;
+  border-radius: 50px;
+  padding: 16px;
+  position: fixed;
+  z-index: 1000;
+  left: 50%;
+  bottom: 30px;
+  font-size: 1.1rem;
+  font-family: 'Fredoka One', cursive;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  transform: translateX(-50%) translateY(100px);
+  transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.toast.show {
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+

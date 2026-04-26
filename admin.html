@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard - Costume Palace</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    /* Admin specific styles to supplement existing styles */
+    .admin-layout {
+      display: flex;
+      min-height: calc(100vh - 70px);
+    }
+    .sidebar {
+      width: 250px;
+      background: #ffffff;
+      border-right: 2px solid #fff0e6;
+      padding: 2rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .sidebar button {
+      background: none;
+      border: none;
+      text-align: left;
+      padding: 10px 15px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #6b7280;
+      cursor: pointer;
+      border-radius: 10px;
+      transition: all 0.2s;
+    }
+    .sidebar button:hover, .sidebar button.active {
+      background: linear-gradient(135deg, #fff0e6, #f5e6ff);
+      color: #a855f7;
+    }
+    .content-area {
+      flex: 1;
+      padding: 2rem;
+      background: #fff8f0;
+      overflow-y: auto;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .dashboard-cards {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 2rem;
+    }
+    .db-card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 15px;
+      flex: 1;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      text-align: center;
+    }
+    .db-card h3 {
+      font-size: 2rem;
+      color: #ff6b35;
+      font-family: 'Fredoka One', cursive;
+    }
+    .db-card p {
+      color: #6b7280;
+      font-weight: 700;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      margin-top: 1rem;
+    }
+    th, td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    th {
+      background: #fff0e6;
+      color: #ff6b35;
+      font-family: 'Fredoka One', cursive;
+    }
+    tr:last-child td {
+      border-bottom: none;
+    }
+    .action-btn {
+      padding: 5px 10px;
+      border-radius: 5px;
+      border: none;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 0.85rem;
+      margin-right: 5px;
+      transition: all 0.2s;
+    }
+    .btn-edit { background: #f59e0b; color: white; }
+    .btn-delete { background: #ef4444; color: white; }
+    .btn-hide { background: #6b7280; color: white; }
+    .btn-show { background: #10b981; color: white; }
+    .btn-admin { background: #a855f7; color: white; }
+    .action-btn:hover { opacity: 0.8; }
+    .top-action {
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: flex-end;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="logo">Costume <span>Palace</span> Admin</div>
+    <div class="nav-links">
+      <span class="login">👤 Admin</span>
+      <a href="/">Storefront</a>
+      <a href="#" onclick="logout()">Logout</a>
+    </div>
+  </nav>
+
+  <div class="admin-layout">
+    <div class="sidebar">
+      <button class="active" onclick="showTab('dashboard')">📊 Dashboard</button>
+      <button onclick="showTab('products')">👗 Products</button>
+      <button onclick="showTab('orders')">📦 Orders</button>
+      <button onclick="showTab('users')">👥 Users</button>
+    </div>
+
+    <div class="content-area">
+      <!-- DASHBOARD TAB -->
+      <div id="tab-dashboard" class="tab-content active">
+        <h2 style="font-family:'Fredoka One'; margin-bottom:1rem; color:#2d2d2d;">Overview</h2>
+        <div class="dashboard-cards">
+          <div class="db-card">
+            <h3 id="stat-products">0</h3>
+            <p>Total Products</p>
+          </div>
+          <div class="db-card">
+            <h3 id="stat-orders">0</h3>
+            <p>Total Orders</p>
+          </div>
+          <div class="db-card">
+            <h3 id="stat-users">0</h3>
+            <p>Registered Users</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRODUCTS TAB -->
+      <div id="tab-products" class="tab-content">
+        <h2 style="font-family:'Fredoka One'; margin-bottom:1rem; color:#2d2d2d;">Product Management</h2>
+        <div class="top-action">
+          <button class="submit-btn" style="width: auto; padding: 0.5rem 1rem;" onclick="openProductModal()">+ Add Product</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Image</th>
+              <th>Name</th>
+              <th>Price</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="products-tbody"></tbody>
+        </table>
+      </div>
+
+      <!-- ORDERS TAB -->
+      <div id="tab-orders" class="tab-content">
+        <h2 style="font-family:'Fredoka One'; margin-bottom:1rem; color:#2d2d2d;">Order Management</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>User</th>
+              <th>Total</th>
+              <th>Status</th>
+              <th>Items</th>
+            </tr>
+          </thead>
+          <tbody id="orders-tbody"></tbody>
+        </table>
+      </div>
+
+      <!-- USERS TAB -->
+      <div id="tab-users" class="tab-content">
+        <h2 style="font-family:'Fredoka One'; margin-bottom:1rem; color:#2d2d2d;">User Management</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Username</th>
+              <th>Role</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="users-tbody"></tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Product Modal -->
+  <div class="modal-overlay" id="productModal">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeProductModal()">×</button>
+      <h2 id="modal-title">Add Product</h2>
+      <div class="form-group" style="margin-top:1rem;">
+        <input type="hidden" id="prod-id">
+        <label>Name</label>
+        <input type="text" id="prod-name" placeholder="Costume Name">
+      </div>
+      <div class="form-group" style="margin-top:1rem;">
+        <label>Description</label>
+        <input type="text" id="prod-desc" placeholder="Description">
+      </div>
+      <div class="form-group" style="margin-top:1rem;">
+        <label>Price</label>
+        <input type="number" id="prod-price" placeholder="99.99">
+      </div>
+      <div class="form-group" style="margin-top:1rem;">
+        <label>Image File (e.g. witch.jpg)</label>
+        <input type="text" id="prod-image" placeholder="witch.jpg">
+      </div>
+      <button class="submit-btn" onclick="saveProduct()">Save Product</button>
+    </div>
+  </div>
+
+  <script>
+    function logout() {
+      window.location.href = "/logout";
+    }
+
+    function showTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.sidebar button').forEach(el => el.classList.remove('active'));
+      document.getElementById('tab-' + tabId).classList.add('active');
+      event.target.classList.add('active');
+      
+      if(tabId === 'products') loadProducts();
+      if(tabId === 'orders') loadOrders();
+      if(tabId === 'users') loadUsers();
+      if(tabId === 'dashboard') loadStats();
+    }
+
+    // Load initial stats
+    loadStats();
+
+    // Stats
+    function loadStats() {
+      fetch('/api/admin/products').then(r=>r.json()).then(d => {
+        document.getElementById('stat-products').innerText = d.length || 0;
+      }).catch(e=>{});
+      fetch('/api/admin/orders').then(r=>r.json()).then(d => {
+        document.getElementById('stat-orders').innerText = d.length || 0;
+      }).catch(e=>{});
+      fetch('/api/admin/users').then(r=>r.json()).then(d => {
+        document.getElementById('stat-users').innerText = d.length || 0;
+      }).catch(e=>{});
+    }
+
+    // PRODUCTS
+    let productsList = [];
+    function loadProducts() {
+      fetch('/api/admin/products')
+        .then(r => r.json())
+        .then(data => {
+          productsList = data;
+          const tbody = document.getElementById('products-tbody');
+          tbody.innerHTML = '';
+          data.forEach(p => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${p.id}</td>
+              <td><img src="/images/${p.image}" style="width:40px; height:40px; border-radius:5px; object-fit:cover;"></td>
+              <td>${p.name}</td>
+              <td>₪${p.price}</td>
+              <td>${p.hidden ? '<span style="color:red">Hidden</span>' : '<span style="color:green">Visible</span>'}</td>
+              <td>
+                <button class="action-btn btn-edit" onclick="editProduct(${p.id})">Edit</button>
+                <button class="action-btn ${p.hidden ? 'btn-show' : 'btn-hide'}" onclick="toggleHideProduct(${p.id}, ${p.hidden})">${p.hidden ? 'Show' : 'Hide'}</button>
+                <button class="action-btn btn-delete" onclick="deleteProduct(${p.id})">Delete</button>
+              </td>
+            `;
+            tbody.appendChild(tr);
+          });
+        });
+    }
+
+    function openProductModal() {
+      document.getElementById('productModal').classList.add('active');
+      document.getElementById('modal-title').innerText = 'Add Product';
+      document.getElementById('prod-id').value = '';
+      document.getElementById('prod-name').value = '';
+      document.getElementById('prod-desc').value = '';
+      document.getElementById('prod-price').value = '';
+      document.getElementById('prod-image').value = '';
+    }
+
+    function closeProductModal() {
+      document.getElementById('productModal').classList.remove('active');
+    }
+
+    function editProduct(id) {
+      const p = productsList.find(x => x.id === id);
+      if(!p) return;
+      openProductModal();
+      document.getElementById('modal-title').innerText = 'Edit Product';
+      document.getElementById('prod-id').value = p.id;
+      document.getElementById('prod-name').value = p.name;
+      document.getElementById('prod-desc').value = p.description;
+      document.getElementById('prod-price').value = p.price;
+      document.getElementById('prod-image').value = p.image;
+    }
+
+    function saveProduct() {
+      const id = document.getElementById('prod-id').value;
+      const data = {
+        name: document.getElementById('prod-name').value,
+        description: document.getElementById('prod-desc').value,
+        price: parseFloat(document.getElementById('prod-price').value),
+        image: document.getElementById('prod-image').value
+      };
+      
+      const url = id ? '/api/admin/products/' + id + '/edit' : '/api/admin/products';
+      
+      fetch(url, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+      }).then(r => {
+        loadProducts();
+        loadStats();
+      });
+      
+      closeProductModal();
+    }
+
+    function toggleHideProduct(id, currentHidden) {
+      fetch('/api/admin/products/' + id + '/hide', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({hidden: currentHidden ? 0 : 1})
+      }).then(r => loadProducts());
+    }
+
+    function deleteProduct(id) {
+      if(!confirm("Are you sure you want to delete this product?")) return;
+      fetch('/api/admin/products/' + id + '/delete', { method: 'POST' }).then(r => {
+        loadProducts();
+        loadStats();
+      });
+    }
+
+    // ORDERS
+    function loadOrders() {
+      fetch('/api/admin/orders')
+        .then(r => r.json())
+        .then(data => {
+          const tbody = document.getElementById('orders-tbody');
+          tbody.innerHTML = '';
+          data.forEach(o => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>#${o.id}</td>
+              <td>${o.username}</td>
+              <td>₪${o.total}</td>
+              <td>
+                <select onchange="updateOrderStatus(${o.id}, this.value)" style="padding:5px; border-radius:5px;">
+                  <option value="Pending" ${o.status==='Pending'?'selected':''}>Pending</option>
+                  <option value="Approved" ${o.status==='Approved'?'selected':''}>Approved</option>
+                  <option value="Shipped" ${o.status==='Shipped'?'selected':''}>Shipped</option>
+                  <option value="Cancelled" ${o.status==='Cancelled'?'selected':''}>Cancelled</option>
+                </select>
+              </td>
+              <td>
+                <span style="font-size: 0.85rem; color: #6b7280;">${o.items.map(i => i.name + ' x' + i.quantity).join(', ')}</span>
+              </td>
+            `;
+            tbody.appendChild(tr);
+          });
+        });
+    }
+
+    function updateOrderStatus(id, newStatus) {
+      fetch('/api/admin/orders/' + id + '/status', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({status: newStatus})
+      }).then(r => loadOrders());
+    }
+
+    // USERS
+    function loadUsers() {
+      fetch('/api/admin/users')
+        .then(r => r.json())
+        .then(data => {
+          const tbody = document.getElementById('users-tbody');
+          tbody.innerHTML = '';
+          data.forEach(u => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${u.id}</td>
+              <td>${u.username}</td>
+              <td>${u.is_admin ? '<strong style="color:#a855f7;">Admin</strong>' : 'User'}</td>
+              <td>
+                ${!u.is_admin ? '<button class="action-btn btn-admin" onclick="makeAdmin(' + u.id + ')">Make Admin</button>' : ''}
+                <button class="action-btn btn-delete" onclick="blockUser(${u.id})">Block/Delete</button>
+              </td>
+            `;
+            tbody.appendChild(tr);
+          });
+        });
+    }
+
+    function makeAdmin(id) {
+      if(!confirm("Make this user an admin?")) return;
+      fetch('/api/admin/users/' + id + '/admin', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({is_admin: 1})
+      }).then(r => loadUsers());
+    }
+
+    function blockUser(id) {
+      if(!confirm("Are you sure you want to delete/block this user?")) return;
+      fetch('/api/admin/users/' + id + '/block', { method: 'POST' }).then(r => {
+        loadUsers();
+        loadStats();
+      });
+    }
+  </script>
+</body>
+</html>

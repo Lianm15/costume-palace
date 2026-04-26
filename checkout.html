@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Checkout</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <nav>
+        <div class="logo">Costume <span>Palace</span></div>
+        <div class="nav-links">
+            <a href="/cart">Back To Cart</a>
+        </div>
+    </nav>
+
+    <div class="checkout-container">
+        <div class="summary-box">
+            <h2>Your order summary</h2>
+            <div id="summary"></div>
+            <h3 id="total" style="text-align:flex-start; padding-top: 1rem;"></h3>
+            <hr class="divider">
+            <h3 style="color: #ff6b35;">Almost Yours… Complete the Magic ✨</h3>
+            <div class="input-box">
+                <div class="personal-details">
+                <h4 style="padding-top: 1rem;">Your Details</h4>
+                <input type="text" class="text-box" placeholder="Name">
+                <input type="text" class="text-box" placeholder="Phone Number">
+                <input type="email" class="text-box" placeholder="Email">
+                <input type="text" class="text-box" placeholder="Address">
+                <input type="text" class="text-box" placeholder="Postal Code">
+                </div>
+                <div class="card-details">
+                <h4 style="padding-top: 1rem;">Credit Card Details</h4>
+                <input type="text" class="text-box" placeholder="Card Owner Name">
+                <input type="text" class="text-box" placeholder="Credit Card Number">
+                <input type="text" class="text-box" placeholder="Expire Date">
+                <input type="text" class="text-box" placeholder="CVV">
+                </div>
+            </div>
+            <div class="submit-order">
+                <button type="button" class="submit-btn" onclick="submitOrder()">Submit Order</button>
+            </div>
+            
+        </div>
+        
+        
+    </div>
+
+    <script>
+        fetch('/api/cart/')
+        .then(r => r.json())
+        .then(items => {
+            const summary = document.getElementById('summary');
+            summary.innerHTML = '';
+
+            let total = 0;
+            items.forEach(item => {
+                total+=item.price*item.quantity;
+                summary.innerHTML += `
+                <div class="summary-item">
+                <img src="/images/${item.image}" alt="${item.name}">
+                <div>
+                <p>₪${item.price} x ${item.quantity}</p>
+                </div>
+            </div>
+            `;
+            });
+            document.getElementById('total').textContent = "Total: ₪" + total;
+        });
+
+        function submitOrder(){
+            const btn = document.querySelector('.submit-btn');
+            btn.textContent = "Processing...";
+
+            fetch('/api/checkout', {method: 'POST'}).then(r => r.json()).then(data => {
+                alert("Order Completed");
+                window.location.href="/";
+            })
+        }
+    </script>
+
+</body>

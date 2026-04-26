@@ -160,5 +160,19 @@ def init_db():
             reviews
         )
 
+    
+    conn.commit()
+
+    # Solved challenges table
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS solved_challenges (
+            id         INTEGER PRIMARY KEY AUTOINCREMENT,
+            username   TEXT,
+            challenge  TEXT,
+            solved_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(username, challenge)
+        )
+    """)
+
     conn.commit()
     conn.close()

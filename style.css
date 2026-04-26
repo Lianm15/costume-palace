@@ -440,6 +440,7 @@ nav .nav-links a.ai:hover {
 #review-content:focus { border-color: #a855f7; }
 
 #login-to-review { color: #9ca3af; font-size: 0.9rem; margin-top: 1rem; font-style: italic; }
+
 #login-to-review a { color: #a855f7; font-weight: 700; text-decoration: none; }
 
 .checkout{
@@ -619,4 +620,7 @@ nav .nav-links a.ai:hover {
 }
 
 
+
+
+#login-to-review a { color: #a855f7; font-weight: 700; text-decoration: none; }
 

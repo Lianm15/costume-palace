@@ -63,6 +63,38 @@ def init_db():
 
     conn.commit()
 
+    #cart table
+    #stores the cart for every user
+
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS cart (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT,
+            product_id INTEGER,
+            quantity INTEGER DEFAULT 1
+        )
+    """)
+
+    # Orders table
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS orders (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT,
+            total REAL
+        )
+    """)
+
+# Order items table
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS order_items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            order_id INTEGER,
+            product_id INTEGER,
+            quantity INTEGER
+        )
+    """)
+
+
     # -------------------------------------------------
     # Seed products (only if the table is empty)
     # -------------------------------------------------

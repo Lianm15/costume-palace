@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Profile</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <nav>
+  <div class="logo">Costume <span>Palace</span></div>
+  <div class="nav-links">
+    <a href="/">Home</a>
+  </div>
+</nav>
+
+<h1 style="text-align:center;">My Profile</h1>
+
+<div style="max-width:600px; margin:30px auto; justify-items: center;">
+
+
+  <h2 style="padding-top: 2rem;">My Orders</h2>
+  <div id="orders"></div>
+
+  <div style="justify-content: center; padding-top: 2rem;">
+    <button class="submit-btn" onclick="logout()">Logout</button>
+  </div>
+
+</div>
+
+<script>
+function getCookie(name) {
+  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+  return match ? match[2] : null;
+}
+
+function logout() {
+  window.location.href = "/logout";
+}
+
+const username = getCookie('username');
+
+// load orders
+fetch('/api/orders', {
+  credentials: 'include'
+})
+  .then(r => r.json())
+  .then(data => {
+    console.log("ORDERS:", data); // 👈 לבדיקה
+
+    const div = document.getElementById('orders');
+    div.innerHTML = '';
+
+    if (data.length === 0) {
+      div.innerHTML = "<p>No orders yet</p>";
+      return;
+    }
+
+    data.forEach(o => {
+  const box = document.createElement('div');
+  box.className = 'order-box';
+
+  box.innerHTML = `
+    <p><strong>Order #${o.id}</strong></p>
+    <p>Total: ₪${o.total}</p>
+    <div id="items-${o.id}"></div>
+  `;
+
+  document.getElementById('orders').appendChild(box);
+
+  // load items
+  fetch('/api/orders/' + o.id)
+    .then(r => r.json())
+    .then(items => {
+      const itemsDiv = document.getElementById('items-' + o.id);
+
+      items.forEach(item => {
+        itemsDiv.innerHTML += `
+          <div class="order-item">
+            <img src="/images/${item.image}">
+            <span>${item.name} x ${item.quantity}</span>
+          </div>
+        `;
+      });
+    });
+    });
+  });
+</script>
+
+</body>

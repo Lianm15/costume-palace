@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cart</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<nav>
+  <div class="logo">Costume <span>Palace</span></div>
+  <div class="nav-links">
+    <a href="/">Home</a>
+  </div>
+</nav>
+
+<h1 style="text-align:center;">Your Cart 🛒</h1>
+<h2 id="total" style="text-align:center;"></h2>
+
+<div class="cart-grid" id="cart"></div>
+
+<div class="checkout">
+    <button type="button" class="checkout-btn" onclick="goToCheckout()">Checkout</button>
+</div>
+
+<script>
+function loadCart() {
+  fetch('/api/cart/')
+    .then(r => r.json())
+    .then(items => {
+      console.log(items); 
+
+      const cart = document.getElementById('cart');
+      cart.innerHTML = '';
+
+      let total = 0; 
+
+      if (items.length === 0) {
+        cart.innerHTML = "<p style='text-align:center'>Your cart is empty</p>";
+        document.getElementById('total').textContent = "";
+        return;
+      }
+
+      items.forEach(item => {
+        total += item.price * item.quantity; 
+
+        const card = document.createElement('div');
+        card.className = 'card';
+
+        card.innerHTML = `
+          <div class="card-body">
+            <img src="/images/${item.image}" alt="${item.name}">
+            
+            <div class="card-name">${item.name}</div>
+            
+            <div class="card-desc">
+              Quantity: ${item.quantity}
+            </div>
+
+            <div class="card-footer">
+              <span class="card-price">₪${item.price}</span>
+              <button class="add-btn" onclick="removeItem(${item.id})">
+                Remove ❌
+              </button>
+            </div>
+          </div>
+        `;
+
+        cart.appendChild(card);
+      });
+
+      
+      document.getElementById('total').textContent = "Total: ₪" + total.toFixed(2);
+    })
+    .catch(err => console.error(err)); 
+}
+
+function removeItem(id) {
+  fetch('/api/cart/' + id, {
+    method: 'DELETE'
+  }).then(() => loadCart());
+}
+
+function goToCheckout() {
+  window.location.href = "/checkout";
+}
+
+
+loadCart();
+</script>
+
+</body>
+</html>

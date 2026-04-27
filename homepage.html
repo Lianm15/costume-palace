@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <title>Costume Palace</title>
   <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 
@@ -18,9 +19,8 @@
         Palace Secrets <span id="challenges-badge"></span>
       </a>
       <a href="#" class="login" onclick="openLogin()">Login</a>
-      <a href="/ai" class="ai">AI Costume Expert</a>
-      <a href="/wishlist" class="wishlist">Wishlist❤️</a>
-      <a href="/cart" class="cart">Cart🛒</a>
+      <a href="/wishlist" class="wishlist"><i class="bi bi-bookmark-heart"></i> Wishlist</a>
+      <a href="/cart" class="cart"><i class="bi bi-cart"></i> Cart</a>
     </div>
   </nav>
 
@@ -478,6 +478,65 @@
 
   <!-- Toast -->
   <div class="toast" id="toast"></div>
+
+
+  <!-- AI CHAT -->
+  <button class="chat-bubble" onclick="toggleChat()" title="AI Costume Expert">
+    <i class="bi bi-robot" style="font-size:1.5rem;"></i>
+  </button>
+
+  <div class="chat-window" id="chatWindow">
+    <div class="chat-header">
+      <span>Costume Expert</span>
+      <button onclick="toggleChat()">✕</button>
+    </div>
+    <div class="chat-messages" id="chatMessages">
+      <div class="chat-msg bot">Hi! I'm your Costume Expert. Ask me anything about our costumes!</div>
+    </div>
+    <div class="chat-input-row">
+      <input type="text" id="chatInput" placeholder="Ask about costumes..."
+        onkeydown="if(event.key==='Enter') sendChat()">
+      <button onclick="sendChat()">Send</button>
+    </div>
+  </div>
+
+  <script>
+    function toggleChat() {
+      document.getElementById('chatWindow').classList.toggle('open');
+    }
+
+    async function sendChat() {
+      const input = document.getElementById('chatInput');
+      const message = input.value.trim();
+      if (!message) return;
+      appendMessage(message, 'user');
+      input.value = '';
+      const typing = appendMessage('...', 'bot typing');
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message })
+        });
+        const data = await res.json();
+        typing.remove();
+        appendMessage(data.reply, 'bot');
+      } catch (e) {
+        typing.remove();
+        appendMessage('Sorry, AI is unavailable right now.', 'bot');
+      }
+    }
+
+    function appendMessage(text, cls) {
+      const messages = document.getElementById('chatMessages');
+      const div = document.createElement('div');
+      div.className = 'chat-msg ' + cls;
+      div.innerHTML = text; //VULN: renders HTML from bot
+      messages.appendChild(div);
+      messages.scrollTop = messages.scrollHeight;
+      return div;
+    }
+  </script>
 
 </body>
 

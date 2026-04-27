@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <title>Profile</title>
@@ -7,130 +8,234 @@
 </head>
 
 <body>
-    <nav>
-  <div class="logo">Costume <span>Palace</span></div>
-  <div class="nav-links">
-    <a href="#" class="login">Login</a>
-    <a href="/">Home</a>
-    <a href="/wishlist">Wishlist ❤️</a>
-    <a href="/cart">Cart 🛒</a>
-  </div>
-</nav>
-
-<div class="profile-container"></div>
-  <h1 style="text-align:center;">My Profile</h1>
-
-  <div style="max-width:600px; margin:30px auto; justify-items: center;">
-
-    <!-- Personal Details Form -->
-    <h2 style="padding-top: 2rem; font-family:'Fredoka One'; color:#4b5563;">My Details</h2>
-    <div style="background:#fff; border-radius:15px; box-shadow:0 4px 15px rgba(0,0,0,0.05); padding:30px; margin-top:1rem; text-align:left;">
-      <div style="margin-bottom:15px;">
-        <label style="display:block; font-weight:bold; color:#374151; margin-bottom:5px;">Full Name</label>
-        <input type="text" id="prof-fullname" class="text-box" style="width:100%; border:1px solid #d1d5db; border-radius:8px; padding:10px;" placeholder="John Doe">
-      </div>
-      <div style="margin-bottom:15px;">
-        <label style="display:block; font-weight:bold; color:#374151; margin-bottom:5px;">Email</label>
-        <input type="email" id="prof-email" class="text-box" style="width:100%; border:1px solid #d1d5db; border-radius:8px; padding:10px;" placeholder="examplename@gmail.com">
-      </div>
-      <div style="margin-bottom:15px;">
-        <label style="display:block; font-weight:bold; color:#374151; margin-bottom:5px;">Phone Number</label>
-        <input type="text" id="prof-phone" class="text-box" style="width:100%; border:1px solid #d1d5db; border-radius:8px; padding:10px;" placeholder="05XXXXXXXX">
-      </div>
-      <button class="submit-btn" style="width:100%; font-size:1.1rem; padding:12px; background:#a855f7; border-radius:10px;" onclick="saveProfile()">Save Details</button>
-      <p id="prof-msg" style="text-align:center; margin-top:10px; font-weight:bold;"></p>
+  <nav>
+    <div class="logo">Costume <span>Palace</span></div>
+    <div class="nav-links">
+      <a href="#" class="login">Login</a>
+      <a href="/">Home</a>
+      <a href="/wishlist">Wishlist ❤️</a>
+      <a href="/cart">Cart 🛒</a>
     </div>
+  </nav>
 
-    <!-- Saved Addresses -->
-    <h2 style="padding-top: 2rem; font-family:'Fredoka One'; color:#4b5563;">Saved Addresses</h2>
-    <div id="addresses" style="width:100%; margin-top:1rem; display:flex; flex-direction:column; gap:10px;"></div>
-    
-    <div style="background:#fff; border-radius:15px; box-shadow:0 4px 15px rgba(0,0,0,0.05); padding:20px; margin-top:1rem; text-align:left;">
-      <h3 style="margin-bottom:10px; font-size:1.1rem; color:#374151;">Add New Address</h3>
-      <input type="text" id="new-addr-name" class="text-box" style="width:100%; border:1px solid #d1d5db; border-radius:8px; padding:8px; margin-bottom:10px;" placeholder="Name (e.g. Home, Work)">
-      <input type="text" id="new-addr-val" class="text-box" style="width:100%; border:1px solid #d1d5db; border-radius:8px; padding:8px; margin-bottom:10px;" placeholder="Address (Street, City)">
-      <input type="text" id="new-addr-postal" class="text-box" style="width:100%; border:1px solid #d1d5db; border-radius:8px; padding:8px; margin-bottom:10px;" placeholder="Postal Code (7 digits)">
-      <button class="submit-btn" style="width:100%; background:#10b981; border-radius:8px; padding:8px;" onclick="addAddress()">Save Address</button>
-    </div>
-
-    <!-- Saved Cards -->
-    <h2 style="padding-top: 2rem; font-family:'Fredoka One'; color:#4b5563;">Saved Payment Methods</h2>
-    <div id="payments" style="width:100%; margin-top:1rem; display:flex; flex-direction:column; gap:10px;"></div>
-    
-    <div style="background:#fff; border-radius:15px; box-shadow:0 4px 15px rgba(0,0,0,0.05); padding:20px; margin-top:1rem; text-align:left;">
-      <h3 style="margin-bottom:10px; font-size:1.1rem; color:#374151;">Add New Card</h3>
-      <input type="text" id="new-card-name" class="text-box" style="width:100%; border:1px solid #d1d5db; border-radius:8px; padding:8px; margin-bottom:10px;" placeholder="Name (e.g. Personal, Business)">
-      <input type="text" id="new-card-num" class="text-box" style="width:100%; border:1px solid #d1d5db; border-radius:8px; padding:8px; margin-bottom:10px;" placeholder="Card Number (16 digits)">
-      <input type="text" id="new-card-exp" class="text-box" style="width:100%; border:1px solid #d1d5db; border-radius:8px; padding:8px; margin-bottom:10px;" placeholder="Expiry (MM/YY)">
-      <input type="text" id="new-card-cvv" class="text-box" style="width:100%; border:1px solid #d1d5db; border-radius:8px; padding:8px; margin-bottom:10px;" placeholder="CVV (3 digits)">
-      <button class="submit-btn" style="width:100%; background:#10b981; border-radius:8px; padding:8px;" onclick="addPayment()">Save Card</button>
-    </div>
-
-    <h2 style="padding-top: 2rem; font-family:'Fredoka One'; color:#a855f7;">My Orders</h2>
-    <div id="orders" style="width:100%; margin-top:1rem;"></div>
-
-    <div style="justify-content: center; padding-top: 2rem; ">
-      <button class="submit-btn" onclick="logout()">Logout</button>
-    </div>
-
-  </div>
-
-<script>
-function getCookie(name) {
-  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-  return match ? match[2] : null;
-}
-
-function logout() {
-  window.location.href = "/logout";
-}
-
-function getCookie(name) {
-  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-  return match ? match[2] : null;
-}
-
-let currentUser = getCookie('username');
-let isAdmin     = getCookie('is_admin') === '1';
-
-if (currentUser) {
-  const loginLink = document.querySelector('.nav-links .login');
-
-  loginLink.textContent = '👤 ' + currentUser;
-  loginLink.href = '/profile'; 
-
-  if (isAdmin) {
-    document.querySelector('.nav-links').innerHTML +=
-      '<a href="/admin" class="admin-link">⚙️ Admin</a>';
-  }
-}
-
-const username = getCookie('username');
-
-// load orders
-fetch('/api/orders', {
-  credentials: 'include'
-})
-  .then(r => r.json())
-  .then(data => {
-    console.log("ORDERS:", data); 
-
-    const div = document.getElementById('orders');
-    div.innerHTML = '';
-
-    if (data.length === 0) {
-      div.innerHTML = "<p>No orders yet</p>";
-      return;
+  <style>
+    .tab-btn {
+      flex: 1;
+      padding: 15px;
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.1rem;
+      color: #6b7280;
+      cursor: pointer;
+      transition: all 0.3s;
     }
 
-    data.forEach(o => {
-      const box = document.createElement('div');
-      box.className = 'order-box';
-      
-      const statusColor = o.status === 'Pending' ? '#f59e0b' : o.status === 'Approved' ? '#3b82f6' : o.status === 'Shipped' ? '#10b981' : '#ef4444';
-      const dateStr = o.created_at ? new Date(o.created_at).toLocaleString() : 'N/A';
+    .tab-btn:hover {
+      background: #f3f4f6;
+      color: #374151;
+    }
 
-      box.innerHTML = `
+    .tab-btn.active {
+      color: #a855f7;
+      border-bottom: 3px solid #a855f7;
+      background: #fff;
+    }
+
+    .tab-content {
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(5px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+
+  <div class="profile-container" style="max-width:800px; margin:30px auto; padding: 0 15px;">
+    <h1 style="text-align:center; font-family:'Fredoka One', cursive; font-size:2.5rem; color:#4b5563;">My Profile</h1>
+
+    <div
+      style="background:#fff; border-radius:15px; box-shadow:0 4px 15px rgba(0,0,0,0.05); overflow:hidden; margin-top:20px;">
+
+      <!-- Tab Controls -->
+      <div style="display:flex; flex-wrap:wrap; border-bottom:1px solid #e5e7eb; background:#f9fafb;">
+        <button class="tab-btn active" onclick="openTab(event, 'tab-details')">My Details</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-addresses')">Addresses</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-payments')">Payment Methods</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-orders')">My Orders</button>
+      </div>
+
+      <!-- Tab Content -->
+      <div style="padding: 30px;">
+
+        <!-- Tab 1: Details -->
+        <div id="tab-details" class="tab-content" style="display:block;">
+          <h2 style="font-family:'Fredoka One'; color:#4b5563; margin-top:0;">Account Settings</h2>
+          <div style="margin-top:1rem; text-align:left;">
+            <div style="margin-bottom:15px;">
+              <label style="display:block; font-weight:bold; color:#374151; margin-bottom:5px;">Full Name</label>
+              <input type="text" id="prof-fullname" class="text-box"
+                style="width:100%; border:1px solid #d1d5db; border-radius:8px; padding:10px;" placeholder="John Doe">
+            </div>
+            <div style="margin-bottom:15px;">
+              <label style="display:block; font-weight:bold; color:#374151; margin-bottom:5px;">Email</label>
+              <input type="email" id="prof-email" class="text-box"
+                style="width:100%; border:1px solid #d1d5db; border-radius:8px; padding:10px;"
+                placeholder="examplename@gmail.com">
+            </div>
+            <div style="margin-bottom:15px;">
+              <label style="display:block; font-weight:bold; color:#374151; margin-bottom:5px;">Phone Number</label>
+              <input type="text" id="prof-phone" class="text-box"
+                style="width:100%; border:1px solid #d1d5db; border-radius:8px; padding:10px;" placeholder="05XXXXXXXX">
+            </div>
+            <button class="submit-btn"
+              style="width:100%; font-size:1.1rem; padding:12px; background:#a855f7; border-radius:10px;"
+              onclick="saveProfile()">Save Details</button>
+            <p id="prof-msg" style="text-align:center; margin-top:10px; font-weight:bold;"></p>
+          </div>
+        </div>
+
+        <!-- Tab 2: Addresses -->
+        <div id="tab-addresses" class="tab-content" style="display:none;">
+          <h2 style="font-family:'Fredoka One'; color:#4b5563; margin-top:0;">Manage Addresses</h2>
+          <div id="addresses" style="width:100%; margin-top:1rem; display:flex; flex-direction:column; gap:10px;"></div>
+
+          <div
+            style="background:#f9fafb; border-radius:15px; border:1px solid #e5e7eb; padding:20px; margin-top:1.5rem; text-align:left;">
+            <h3 style="margin-bottom:10px; font-size:1.1rem; color:#374151;">Add New Address</h3>
+            <input type="text" id="new-addr-name" class="text-box"
+              style="width:100%; border:1px solid #d1d5db; border-radius:8px; padding:8px; margin-bottom:10px;"
+              placeholder="Name (e.g. Home, Work)">
+            <input type="text" id="new-addr-val" class="text-box"
+              style="width:100%; border:1px solid #d1d5db; border-radius:8px; padding:8px; margin-bottom:10px;"
+              placeholder="Address (Street, City)">
+            <input type="text" id="new-addr-postal" class="text-box"
+              style="width:100%; border:1px solid #d1d5db; border-radius:8px; padding:8px; margin-bottom:10px;"
+              placeholder="Postal Code (7 digits)">
+            <small id="addr-err" style="color:#ef4444; display:block; margin-bottom:10px; font-weight:bold;"></small>
+            <button class="submit-btn" style="width:100%; background:#10b981; border-radius:8px; padding:8px;"
+              onclick="addAddress()">Save Address</button>
+          </div>
+        </div>
+
+        <!-- Tab 3: Payments -->
+        <div id="tab-payments" class="tab-content" style="display:none;">
+          <h2 style="font-family:'Fredoka One'; color:#4b5563; margin-top:0;">Saved Payment Methods</h2>
+          <div id="payments" style="width:100%; margin-top:1rem; display:flex; flex-direction:column; gap:10px;"></div>
+
+          <div
+            style="background:#f9fafb; border-radius:15px; border:1px solid #e5e7eb; padding:20px; margin-top:1.5rem; text-align:left;">
+            <h3 style="margin-bottom:10px; font-size:1.1rem; color:#374151;">Add New Card</h3>
+            <input type="text" id="new-card-name" class="text-box"
+              style="width:100%; border:1px solid #d1d5db; border-radius:8px; padding:8px; margin-bottom:10px;"
+              placeholder="Name (e.g. Personal, Business)">
+            <input type="text" id="new-card-num" class="text-box"
+              style="width:100%; border:1px solid #d1d5db; border-radius:8px; padding:8px; margin-bottom:10px;"
+              placeholder="Card Number (16 digits)">
+            <input type="text" id="new-card-exp" class="text-box"
+              style="width:100%; border:1px solid #d1d5db; border-radius:8px; padding:8px; margin-bottom:10px;"
+              placeholder="Expiry (MM/YY)">
+            <input type="text" id="new-card-cvv" class="text-box"
+              style="width:100%; border:1px solid #d1d5db; border-radius:8px; padding:8px; margin-bottom:10px;"
+              placeholder="CVV (3 digits)">
+            <small id="card-err" style="color:#ef4444; display:block; margin-bottom:10px; font-weight:bold;"></small>
+            <button class="submit-btn" style="width:100%; background:#10b981; border-radius:8px; padding:8px;"
+              onclick="addPayment()">Save Card</button>
+          </div>
+        </div>
+
+        <!-- Tab 4: Orders -->
+        <div id="tab-orders" class="tab-content" style="display:none;">
+          <h2 style="font-family:'Fredoka One'; color:#a855f7; margin-top:0;">My Orders</h2>
+          <div id="orders" style="width:100%; margin-top:1rem;"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <div style="text-align: center; padding-top: 1rem; margin-bottom: 30px;">
+      <button class="submit-btn" style="background:#ef4444;" onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <script>
+    function openTab(evt, tabName) {
+      const contents = document.getElementsByClassName("tab-content");
+      for (let i = 0; i < contents.length; i++) {
+        contents[i].style.display = "none";
+      }
+      const tabs = document.getElementsByClassName("tab-btn");
+      for (let i = 0; i < tabs.length; i++) {
+        tabs[i].className = tabs[i].className.replace(" active", "");
+      }
+      document.getElementById(tabName).style.display = "block";
+      evt.currentTarget.className += " active";
+    }
+
+    function getCookie(name) {
+      const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+      return match ? match[2] : null;
+    }
+
+    function logout() {
+      window.location.href = "/logout";
+    }
+
+    function getCookie(name) {
+      const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+      return match ? match[2] : null;
+    }
+
+    let currentUser = getCookie('username');
+    let isAdmin = getCookie('is_admin') === '1';
+
+    if (currentUser) {
+      const loginLink = document.querySelector('.nav-links .login');
+
+      loginLink.textContent = '👤 ' + currentUser;
+      loginLink.href = '/profile';
+
+      if (isAdmin) {
+        document.querySelector('.nav-links').innerHTML +=
+          '<a href="/admin" class="admin-link">⚙️ Admin</a>';
+      }
+    }
+
+    const username = getCookie('username');
+
+    // load orders
+    fetch('/api/orders', {
+      credentials: 'include'
+    })
+      .then(r => r.json())
+      .then(data => {
+        console.log("ORDERS:", data);
+
+        const div = document.getElementById('orders');
+        div.innerHTML = '';
+
+        if (data.length === 0) {
+          div.innerHTML = "<p>No orders yet</p>";
+          return;
+        }
+
+        data.forEach(o => {
+          const box = document.createElement('div');
+          box.className = 'order-box';
+
+          const statusColor = o.status === 'Pending' ? '#f59e0b' : o.status === 'Approved' ? '#3b82f6' : o.status === 'Shipped' ? '#10b981' : '#ef4444';
+          const dateStr = o.created_at ? new Date(o.created_at).toLocaleString() : 'N/A';
+
+          box.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f3f4f6; padding-bottom:10px; margin-bottom:15px;">
           <div>
             <h3 style="margin:0; color:#ff6b35; font-family:'Fredoka One',cursive;">Order Ref: CP-${10000 + parseInt(o.id)}</h3>
@@ -144,16 +249,16 @@ fetch('/api/orders', {
         <div id="items-${o.id}" style="display:flex; flex-direction:column; gap:12px;"></div>
       `;
 
-      document.getElementById('orders').appendChild(box);
+          document.getElementById('orders').appendChild(box);
 
-      // load items
-      fetch('/api/orders/' + o.id)
-        .then(r => r.json())
-        .then(items => {
-          const itemsDiv = document.getElementById('items-' + o.id);
+          // load items
+          fetch('/api/orders/' + o.id)
+            .then(r => r.json())
+            .then(items => {
+              const itemsDiv = document.getElementById('items-' + o.id);
 
-          items.forEach(item => {
-            itemsDiv.innerHTML += `
+              items.forEach(item => {
+                itemsDiv.innerHTML += `
               <div class="order-item" style="display:flex; align-items:center; gap:15px; background:#fff8f0; padding:10px 15px; border-radius:12px; border:1px solid #fff0e6;">
                 <img src="/images/${item.image}" style="width:60px; height:60px; object-fit:cover; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
                 <div style="flex:1;">
@@ -162,52 +267,63 @@ fetch('/api/orders', {
                 </div>
               </div>
             `;
-          });
+              });
+            });
         });
-    });
-  });
+      });
 
-// load profile details
-fetch('/api/profile')
-  .then(r => r.json())
-  .then(data => {
-    if(!data.error) {
-      document.getElementById('prof-fullname').value = data.full_name || '';
-      document.getElementById('prof-email').value = data.email || '';
-      document.getElementById('prof-phone').value = data.phone || '';
+    // load profile details
+    fetch('/api/profile')
+      .then(r => r.json())
+      .then(data => {
+        if (!data.error) {
+          document.getElementById('prof-fullname').value = data.full_name || '';
+          document.getElementById('prof-email').value = data.email || '';
+          document.getElementById('prof-phone').value = data.phone || '';
+        }
+      });
+
+    function saveProfile() {
+      const fullname = document.getElementById('prof-fullname').value.trim();
+      const email = document.getElementById('prof-email').value.trim();
+      const phone = document.getElementById('prof-phone').value.trim();
+      const msg = document.getElementById('prof-msg');
+
+      const f_filled = fullname !== '';
+      const e_filled = email !== '';
+      const p_filled = phone !== '';
+
+      if (!f_filled && !e_filled && !p_filled) {
+        // Empty block = allowed
+      } else if (!f_filled || !e_filled || !p_filled) {
+        msg.textContent = '❌ Must fill all personal details completely or leave them all empty'; msg.style.color = '#ef4444'; return;
+      }
+
+      if (email && !email.endsWith('@gmail.com')) { msg.textContent = '❌ Email must be a @gmail.com address'; msg.style.color = '#ef4444'; return; }
+      if (phone && !/^0\d{9}$/.test(phone)) { msg.textContent = '❌ Phone must be exactly 10 digits and start with 0'; msg.style.color = '#ef4444'; return; }
+
+      fetch('/api/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          full_name: fullname,
+          email: email,
+          phone: phone
+        })
+      }).then(r => r.json()).then(data => {
+        msg.textContent = '✔️ Profile Saved Successfully!';
+        msg.style.color = '#10b981';
+        setTimeout(() => msg.textContent = '', 3000);
+      });
     }
-  });
 
-function saveProfile() {
-  const email = document.getElementById('prof-email').value;
-  const phone = document.getElementById('prof-phone').value;
-  const msg = document.getElementById('prof-msg');
-  
-  if (email && !email.endsWith('@gmail.com')) { msg.textContent = '❌ Email must be a @gmail.com address'; msg.style.color = '#ef4444'; return; }
-  if (phone && !/^0\d{9}$/.test(phone)) { msg.textContent = '❌ Phone must be 10 digits starting with 0'; msg.style.color = '#ef4444'; return; }
-  
-  fetch('/api/profile', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      full_name: document.getElementById('prof-fullname').value,
-      email: email,
-      phone: phone
-    })
-  }).then(r => r.json()).then(data => {
-      msg.textContent = '✔️ Profile Saved Successfully!';
-      msg.style.color = '#10b981';
-      setTimeout(() => msg.textContent = '', 3000);
-  });
-}
-
-function loadAddresses() {
-  fetch('/api/profile/addresses').then(r=>r.json()).then(data => {
-    const div = document.getElementById('addresses');
-    div.innerHTML = '';
-    if(!data.length) { div.innerHTML='<p style="text-align:center; color:#6b7280;">No saved addresses</p>'; }
-    data.forEach(a => {
-      div.innerHTML += `
+    function loadAddresses() {
+      fetch('/api/profile/addresses').then(r => r.json()).then(data => {
+        const div = document.getElementById('addresses');
+        div.innerHTML = '';
+        if (!data.length) { div.innerHTML = '<p style="text-align:center; color:#6b7280;">No saved addresses</p>'; }
+        data.forEach(a => {
+          div.innerHTML += `
         <div style="background:#f9fafb; padding:15px; border-radius:10px; display:flex; justify-content:space-between; align-items:center; border:1px solid #e5e7eb;">
           <div>
             <strong style="color:#374151;">${a.address_name}</strong>
@@ -215,38 +331,57 @@ function loadAddresses() {
           </div>
           <button style="background:none; border:none; color:#ef4444; font-size:1.2rem; cursor:pointer;" onclick="deleteAddress(${a.id})">🗑️</button>
         </div>`;
-    });
-  });
-}
+        });
+      });
+    }
 
-function addAddress() {
-  fetch('/api/profile/addresses', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({
-      address_name: document.getElementById('new-addr-name').value,
-      address: document.getElementById('new-addr-val').value,
-      postal_code: document.getElementById('new-addr-postal').value
-    })
-  }).then(() => {
-    document.getElementById('new-addr-name').value = '';
-    document.getElementById('new-addr-val').value = '';
-    document.getElementById('new-addr-postal').value = '';
-    loadAddresses();
-  });
-}
+    function addAddress() {
+      const name = document.getElementById('new-addr-name').value.trim();
+      const val = document.getElementById('new-addr-val').value.trim();
+      const postal = document.getElementById('new-addr-postal').value.trim();
+      const err = document.getElementById('addr-err');
 
-function deleteAddress(id) { fetch('/api/profile/addresses/'+id, {method:'DELETE'}).then(()=>loadAddresses()); }
+      const n_filled = name !== '';
+      const v_filled = val !== '';
+      const p_filled = postal !== '';
+
+      if (!n_filled && !v_filled && !p_filled) {
+        return; // Empty block = allowed, silently return to avoid adding blank records
+      } else if (!n_filled || !v_filled || !p_filled) {
+        err.textContent = "❌ Must fill all address fields completely to save"; return;
+      }
+
+      if (!/^\d{7}$/.test(postal)) { err.textContent = "❌ Postal code must be exactly 7 digits"; return; }
+      err.textContent = "";
+
+      fetch('/api/profile/addresses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          address_name: document.getElementById('new-addr-name').value,
+          address: document.getElementById('new-addr-val').value,
+          postal_code: postal
+        })
+      }).then(r => r.json()).then(data => {
+        if (data.error) { err.textContent = "❌ " + data.error; return; }
+        document.getElementById('new-addr-name').value = '';
+        document.getElementById('new-addr-val').value = '';
+        document.getElementById('new-addr-postal').value = '';
+        loadAddresses();
+      });
+    }
+
+    function deleteAddress(id) { fetch('/api/profile/addresses/' + id, { method: 'DELETE' }).then(() => loadAddresses()); }
 
 
-function loadPayments() {
-  fetch('/api/profile/payments').then(r=>r.json()).then(data => {
-    const div = document.getElementById('payments');
-    div.innerHTML = '';
-    if(!data.length) { div.innerHTML='<p style="text-align:center; color:#6b7280;">No saved cards</p>'; }
-    data.forEach(p => {
-      const obfuscated = '**** **** **** ' + (p.card_number.slice(-4) || '****');
-      div.innerHTML += `
+    function loadPayments() {
+      fetch('/api/profile/payments').then(r => r.json()).then(data => {
+        const div = document.getElementById('payments');
+        div.innerHTML = '';
+        if (!data.length) { div.innerHTML = '<p style="text-align:center; color:#6b7280;">No saved cards</p>'; }
+        data.forEach(p => {
+          const obfuscated = '**** **** **** ' + (p.card_number.slice(-4) || '****');
+          div.innerHTML += `
         <div style="background:#f9fafb; padding:15px; border-radius:10px; display:flex; justify-content:space-between; align-items:center; border:1px solid #e5e7eb;">
           <div>
             <strong style="color:#374151;">${p.card_name}</strong>
@@ -254,34 +389,68 @@ function loadPayments() {
           </div>
           <button style="background:none; border:none; color:#ef4444; font-size:1.2rem; cursor:pointer;" onclick="deletePayment(${p.id})">🗑️</button>
         </div>`;
-    });
-  });
-}
+        });
+      });
+    }
 
-function addPayment() {
-  fetch('/api/profile/payments', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({
-      card_name: document.getElementById('new-card-name').value,
-      card_number: document.getElementById('new-card-num').value,
-      expiry: document.getElementById('new-card-exp').value,
-      cvv: document.getElementById('new-card-cvv').value
-    })
-  }).then(() => {
-    document.getElementById('new-card-name').value = '';
-    document.getElementById('new-card-num').value = '';
-    document.getElementById('new-card-exp').value = '';
-    document.getElementById('new-card-cvv').value = '';
+    function addPayment() {
+      const name = document.getElementById('new-card-name').value.trim();
+      const num = document.getElementById('new-card-num').value.replace(/\s/g, '');
+      const exp = document.getElementById('new-card-exp').value.trim();
+      const cvv = document.getElementById('new-card-cvv').value.trim();
+      const err = document.getElementById('card-err');
+
+      const n_filled = name !== '';
+      const num_filled = num !== '';
+      const e_filled = exp !== '';
+      const c_filled = cvv !== '';
+
+      if (!n_filled && !num_filled && !e_filled && !c_filled) {
+        return; // Empty block = allowed
+      } else if (!n_filled || !num_filled || !e_filled || !c_filled) {
+        err.textContent = "❌ Must fill all payment fields completely to save"; return;
+      }
+
+      if (num.length < 16 || !/^\d+$/.test(num)) { err.textContent = "❌ Card must be numeric and 16 digits long"; return; }
+      if (!/^\d{2}\/\d{2}$/.test(exp)) { err.textContent = "❌ Expiry must be MM/YY"; return; }
+
+      const parts = exp.split('/');
+      const m = parseInt(parts[0], 10);
+      const y = parseInt(parts[1], 10);
+      if (m < 1 || m > 12) { err.textContent = "❌ Invalid month"; return; }
+
+      const now = new Date();
+      const curY = now.getFullYear() % 100;
+      const curM = now.getMonth() + 1;
+      if (y < curY || (y === curY && m < curM)) { err.textContent = "❌ Card has expired"; return; }
+
+      if (!/^\d{3}$/.test(cvv)) { err.textContent = "❌ CVV must be exactly 3 digits"; return; }
+      err.textContent = "";
+
+      fetch('/api/profile/payments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          card_name: document.getElementById('new-card-name').value,
+          card_number: num,
+          expiry: exp,
+          cvv: cvv
+        })
+      }).then(r => r.json()).then(data => {
+        if (data.error) { err.textContent = "❌ " + data.error; return; }
+        document.getElementById('new-card-name').value = '';
+        document.getElementById('new-card-num').value = '';
+        document.getElementById('new-card-exp').value = '';
+        document.getElementById('new-card-cvv').value = '';
+        loadPayments();
+      });
+    }
+
+    function deletePayment(id) { fetch('/api/profile/payments/' + id, { method: 'DELETE' }).then(() => loadPayments()); }
+
+    loadAddresses();
     loadPayments();
-  });
-}
 
-function deletePayment(id) { fetch('/api/profile/payments/'+id, {method:'DELETE'}).then(()=>loadPayments()); }
-
-loadAddresses();
-loadPayments();
-
-</script>
+  </script>
 
 </body>

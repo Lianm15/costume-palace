@@ -15,11 +15,11 @@
     <div class="logo">Costume <span>Palace</span></div>
     <div class="nav-links">
       <a href="#" class="challenges-link" onclick="openDrawer(); return false;">
-       Palace Secrets <span id="challenges-badge"></span>
+        Palace Secrets <span id="challenges-badge"></span>
       </a>
       <a href="#" class="login" onclick="openLogin()">Login</a>
       <a href="/ai" class="ai">AI Costume Expert</a>
-      <a href="/wishlist" class="wishlist">Wishlist ❤️</a>
+      <a href="/wishlist" class="wishlist">Wishlist❤️</a>
       <a href="/cart" class="cart">Cart🛒</a>
     </div>
   </nav>
@@ -35,13 +35,15 @@
   <section class="costumes-section" id="costumes">
     <h2>Our <span>Costumes</span></h2>
     <div style="display:flex; justify-content:center; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
-       <input type="text" id="store-search" placeholder="Search costumes..." oninput="renderStore()" style="padding:10px; border-radius:10px; border:2px solid #e5e7eb; width: 300px; font-family:'Nunito'; outline:none;">
-       <select id="store-sort" onchange="renderStore()" style="padding:10px; border-radius:10px; border:2px solid #e5e7eb; font-family:'Nunito'; outline:none;">
-          <option value="none">Sort By / Filter</option>
-          <option value="price-asc">Price: Low to High</option>
-          <option value="price-desc">Price: High to Low</option>
-          <option value="abc">Alphabetical</option>
-       </select>
+      <input type="text" id="store-search" placeholder="Search costumes..." oninput="renderStore()"
+        style="padding:10px; border-radius:10px; border:2px solid #e5e7eb; width: 300px; font-family:'Nunito'; outline:none;">
+      <select id="store-sort" onchange="renderStore()"
+        style="padding:10px; border-radius:10px; border:2px solid #e5e7eb; font-family:'Nunito'; outline:none;">
+        <option value="none">Sort By / Filter</option>
+        <option value="price-asc">Price: Low to High</option>
+        <option value="price-desc">Price: High to Low</option>
+        <option value="abc">Alphabetical</option>
+      </select>
     </div>
     <div class="grid" id="costume-grid">
       <!-- Cards loaded dynamically -->
@@ -159,12 +161,12 @@
       const loginBtn = document.querySelector('.nav-links .login');
 
       loginBtn.textContent = '👤 ' + currentUser;
-      loginBtn.href = '/profile';    
+      loginBtn.href = '/profile';
       loginBtn.onclick = null;
-       
+
       if (isAdmin) {
         document.querySelector('.nav-links').innerHTML +=
-          '<a href="/admin" class="admin-link">⚙️ Admin</a>';
+          '<a href="/admin" class="admin-link">Admin⚙️</a>';
       }
     }
 
@@ -243,98 +245,98 @@
     }
 
     function addToCart(productId, btnElement) {
-      if(!currentUser) {
+      if (!currentUser) {
         openLogin();
         return;
       }
-      
+
       const originalText = btnElement ? btnElement.innerText : 'Add to Cart';
       if (btnElement) {
         btnElement.innerText = 'Adding...';
         btnElement.disabled = true;
       }
-      
+
       fetch('/api/cart/add', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ product_id: productId })
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ product_id: productId })
       })
-      .then(r => r.json())
-      .then(data => {
-        if(data.error) {
-           openLogin();
-           if (btnElement) {
-             btnElement.innerText = originalText;
-             btnElement.disabled = false;
-           }
-        } else {
-           if (btnElement) {
-             btnElement.innerText = 'Added! ✔️';
-             btnElement.style.background = '#10b981'; // green
-             setTimeout(() => {
-               btnElement.innerText = originalText;
-               btnElement.disabled = false;
-               btnElement.style.background = '';
-             }, 2000);
-           }
-           
-           const toast = document.getElementById('toast');
-           toast.textContent = 'Added to Cart! 🛒';
-           toast.classList.add('show');
-           setTimeout(() => toast.classList.remove('show'), 3000);
-        }
-      })
-      .catch(e => {
-         console.error("Error adding to cart", e);
-         if (btnElement) {
-           btnElement.innerText = originalText;
-           btnElement.disabled = false;
-         }
-      });
+        .then(r => r.json())
+        .then(data => {
+          if (data.error) {
+            openLogin();
+            if (btnElement) {
+              btnElement.innerText = originalText;
+              btnElement.disabled = false;
+            }
+          } else {
+            if (btnElement) {
+              btnElement.innerText = 'Added! ✔️';
+              btnElement.style.background = '#10b981'; // green
+              setTimeout(() => {
+                btnElement.innerText = originalText;
+                btnElement.disabled = false;
+                btnElement.style.background = '';
+              }, 2000);
+            }
+
+            const toast = document.getElementById('toast');
+            toast.textContent = 'Added to Cart! 🛒';
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+          }
+        })
+        .catch(e => {
+          console.error("Error adding to cart", e);
+          if (btnElement) {
+            btnElement.innerText = originalText;
+            btnElement.disabled = false;
+          }
+        });
     }
 
     // Storefront Filters and Wishlist logic
     let allStoreProducts = [];
     let wishlistItems = new Set();
-    
+
     function loadWishlist() {
-        if(currentUser) {
-            return fetch('/api/wishlist').then(r=>r.json()).then(data => {
-                data.forEach(p => wishlistItems.add(p.id));
-            });
-        }
-        return Promise.resolve();
+      if (currentUser) {
+        return fetch('/api/wishlist').then(r => r.json()).then(data => {
+          data.forEach(p => wishlistItems.add(p.id));
+        });
+      }
+      return Promise.resolve();
     }
-    
+
     function initStore() {
-        fetch('/api/products')
-          .then(res => res.json())
-          .then(products => {
-            allStoreProducts = products;
-            loadWishlist().then(() => renderStore());
-          });
+      fetch('/api/products')
+        .then(res => res.json())
+        .then(products => {
+          allStoreProducts = products;
+          loadWishlist().then(() => renderStore());
+        });
     }
-    
+
     initStore();
-    
+
     function renderStore() {
-        const grid = document.getElementById('costume-grid');
-        grid.innerHTML = '';
-        const search = document.getElementById('store-search').value.toLowerCase();
-        const sort = document.getElementById('store-sort').value;
-        
-        let filtered = allStoreProducts.filter(p => !search || p.name.toLowerCase().includes(search));
-        
-        if(sort === 'price-asc') filtered.sort((a,b) => a.price - b.price);
-        if(sort === 'price-desc') filtered.sort((a,b) => b.price - a.price);
-        if(sort === 'abc') filtered.sort((a,b) => a.name.localeCompare(b.name));
-        
-        filtered.forEach(p => {
-          const isWished = wishlistItems.has(p.id);
-          const heart = isWished ? '❤️' : '🤍';
-          const card = document.createElement('div');
-          card.className = 'card';
-          card.innerHTML = `
+      const grid = document.getElementById('costume-grid');
+      grid.innerHTML = '';
+      const search = document.getElementById('store-search').value.toLowerCase();
+      const sort = document.getElementById('store-sort').value;
+
+      let filtered = allStoreProducts.filter(p => !search || p.name.toLowerCase().includes(search));
+
+      if (sort === 'price-asc') filtered.sort((a, b) => a.price - b.price);
+      if (sort === 'price-desc') filtered.sort((a, b) => b.price - a.price);
+      if (sort === 'abc') filtered.sort((a, b) => a.name.localeCompare(b.name));
+
+      filtered.forEach(p => {
+        const isWished = wishlistItems.has(p.id);
+        const heart = isWished ? '❤️' : '🤍';
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
             <div class="card-body" style="position:relative;">
               <span style="position:absolute; top:20px; right:20px; font-size:1.5rem; cursor:pointer; z-index:10; background:rgba(255,255,255,0.8); border-radius:50%; width:40px; height:40px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 5px rgba(0,0,0,0.1);" onclick="toggleWish(${p.id}, this)">${heart}</span>
               <img src="/images/${p.image}" alt="${p.name} Costume" onclick="openProductModal(${p.id})">
@@ -343,27 +345,27 @@
               <div class="card-footer" style="align-items: center;">
                 <span class="card-price" style="margin-right:auto;">₪${p.price}</span>
                 <button class="add-btn" style="background-color:#9CA3AF; margin-right:5px;" onclick="openProductModal(${p.id})">Reviews</button>
-                <button class="add-btn" onclick="addToCart(${p.id}, this)">Add to Cart</button>
+                <button class="add-btn" onclick="addToCart(${p.id}, this)">Cart</button>
               </div>
             </div>`;
-          grid.appendChild(card);
-        });
+        grid.appendChild(card);
+      });
     }
-    
+
     function toggleWish(id, btn) {
-        if(!currentUser) { openLogin(); return; }
-        fetch('/api/wishlist/toggle', {
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({product_id:id})
-        }).then(r=>r.json()).then(data => {
-            if(data.added) { wishlistItems.add(id); btn.innerText = '❤️'; }
-            else { wishlistItems.delete(id); btn.innerText = '🤍'; }
-            const toast = document.getElementById('toast');
-            toast.textContent = data.added ? 'Added to Wishlist!' : 'Removed from Wishlist';
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
-        });
+      if (!currentUser) { openLogin(); return; }
+      fetch('/api/wishlist/toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ product_id: id })
+      }).then(r => r.json()).then(data => {
+        if (data.added) { wishlistItems.add(id); btn.innerText = '❤️'; }
+        else { wishlistItems.delete(id); btn.innerText = '🤍'; }
+        const toast = document.getElementById('toast');
+        toast.textContent = data.added ? 'Added to Wishlist!' : 'Removed from Wishlist';
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+      });
     }
 
   </script>

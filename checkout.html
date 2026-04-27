@@ -43,7 +43,7 @@
                       <input type="text" class="text-box" id="chk-postal" placeholder="Postal Code (7 digits)" style="width: 100%;">
                       <small class="error-msg" id="postal-error"></small>
                   </div>
-                  <div style="margin-top:10px; display:flex; align-items:center; gap:8px;">
+                  <div id="save-addr-wrapper" style="margin-top:10px; display:flex; align-items:center; gap:8px;">
                      <input type="checkbox" id="save-addr-chk">
                      <label style="color:#4b5563;">Save this address for future orders</label>
                   </div>
@@ -69,7 +69,7 @@
                     <input type="text" class="text-box" id="cvv-number" placeholder="CVV">
                     <small class="error-msg" id="cvv-error"></small>
                 </div>
-                <div style="margin-top:10px; display:flex; align-items:center; gap:8px;">
+                <div id="save-card-wrapper" style="margin-top:10px; display:flex; align-items:center; gap:8px;">
                    <input type="checkbox" id="save-card-chk">
                    <label style="color:#4b5563;">Save this card for future orders</label>
                 </div>
@@ -118,11 +118,13 @@
             if(val === 'new') {
                 document.getElementById('chk-address').value = '';
                 document.getElementById('chk-postal').value = '';
+                document.getElementById('save-addr-wrapper').style.display = 'flex';
                 document.getElementById('save-addr-chk').checked = false;
                 document.getElementById('save-addr-name').style.display = 'none';
             } else {
                 document.getElementById('chk-address').value = userAddresses[val].address;
                 document.getElementById('chk-postal').value = userAddresses[val].postal_code;
+                document.getElementById('save-addr-wrapper').style.display = 'none';
                 document.getElementById('save-addr-chk').checked = false;
                 document.getElementById('save-addr-name').style.display = 'none';
             }
@@ -135,13 +137,15 @@
                 document.getElementById('creditcard-number').value = '';
                 document.getElementById('date-number').value = '';
                 document.getElementById('cvv-number').value = '';
+                document.getElementById('save-card-wrapper').style.display = 'flex';
                 document.getElementById('save-card-chk').checked = false;
                 document.getElementById('save-card-name').style.display = 'none';
             } else {
-                document.getElementById('chk-cardname').value = userPayments[val].username;
+                document.getElementById('chk-cardname').value = userPayments[val].card_name;
                 document.getElementById('creditcard-number').value = userPayments[val].card_number;
                 document.getElementById('date-number').value = userPayments[val].expiry;
                 document.getElementById('cvv-number').value = userPayments[val].cvv;
+                document.getElementById('save-card-wrapper').style.display = 'none';
                 document.getElementById('save-card-chk').checked = false;
                 document.getElementById('save-card-name').style.display = 'none';
             }

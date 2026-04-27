@@ -213,11 +213,18 @@ async def handle_checkout(request: Request):
     db = get_db()
     if username:
         if body.get("save_address"):
-            db.execute("INSERT INTO user_addresses (username, address_name, address, postal_code) VALUES (?,?,?,?)", 
-                       (username, body.get("address_name") or "Saved Address", body.get("address", ""), postal))
+            addr_val = body.get("address", "")
+            exists = db.execute("SELECT 1 FROM user_addresses WHERE username=? AND address=? AND postal_code=?", (username, addr_val, postal)).fetchone()
+            if not exists:
+                db.execute("INSERT INTO user_addresses (username, address_name, address, postal_code) VALUES (?,?,?,?)", 
+                           (username, body.get("address_name") or "Saved Address", addr_val, postal))
         if body.get("save_payment"):
-            db.execute("INSERT INTO user_payments (username, card_name, card_number, expiry, cvv) VALUES (?,?,?,?,?)",
-                       (username, body.get("card_name") or "Saved Card", body.get("card_number", ""), body.get("expiry", ""), body.get("cvv", "")))
+            c_num = body.get("card_number", "")
+            c_exp = body.get("expiry", "")
+            exists = db.execute("SELECT 1 FROM user_payments WHERE username=? AND card_number=? AND expiry=?", (username, c_num, c_exp)).fetchone()
+            if not exists:
+                db.execute("INSERT INTO user_payments (username, card_name, card_number, expiry, cvv) VALUES (?,?,?,?,?)",
+                           (username, body.get("card_name") or "Saved Card", c_num, c_exp, body.get("cvv", "")))
     
     if not phone or not phone.startswith("0") or len(phone) != 10 or not phone.isdigit():
         return JSONResponse({"error": "Invalid phone number"}, status_code=400)
@@ -377,6 +384,19 @@ async def update_user_profile(request: Request):
     except Exception:
         body = {}
         
+    full_name = body.get("full_name", "").strip()
+    phone = body.get("phone", "").strip()
+    email = body.get("email", "").strip()
+    
+    filled_count = sum(bool(x) for x in [full_name, phone, email])
+    if filled_count > 0 and filled_count < 3:
+        return JSONResponse({"error": "Must fill all personal details or leave them all empty"}, status_code=400)
+    
+    if phone and (not phone.startswith("0") or len(phone) != 10 or not phone.isdigit()):
+        return JSONResponse({"error": "Phone must be exactly 10 digits starting with 0"}, status_code=400)
+    if email and not email.endswith("@gmail.com"):
+        return JSONResponse({"error": "Email must be a @gmail.com address"}, status_code=400)
+        
     db = get_db()
     db.execute("""
         UPDATE users 
@@ -411,9 +431,28 @@ async def add_user_address(request: Request):
     username = request.cookies.get("username")
     if not username: return JSONResponse({"error": "Unauthorized"}, status_code=403)
     body = await request.json()
+    
+    address_name = body.get('address_name', "").strip()
+    address = body.get('address', "").strip()
+    postal = body.get('postal_code', "").strip()
+    
+    filled_count = sum(bool(x) for x in [address_name, address, postal])
+    if filled_count == 0:
+        return JSONResponse({"ok": True})
+    elif filled_count < 3:
+        return JSONResponse({"error": "Must fill all address details completely"}, status_code=400)
+    
+    if not postal or len(postal) != 7 or not postal.isdigit():
+        return JSONResponse({"error": "Postal code must be exactly 7 digits"}, status_code=400)
+        
     db = get_db()
+    exists = db.execute("SELECT 1 FROM user_addresses WHERE username=? AND address=? AND postal_code=?", (username, address, postal)).fetchone()
+    if exists:
+        db.close()
+        return JSONResponse({"error": "This exact address is already saved in your profile"}, status_code=400)
+        
     db.execute("INSERT INTO user_addresses (username, address_name, address, postal_code) VALUES (?,?,?,?)", 
-               (username, body.get('address_name'), body.get('address'), body.get('postal_code')))
+               (username, address_name, address, postal))
     db.commit()
     db.close()
     return JSONResponse({"ok": True})
@@ -442,9 +481,44 @@ async def add_user_payment(request: Request):
     username = request.cookies.get("username")
     if not username: return JSONResponse({"error": "Unauthorized"}, status_code=403)
     body = await request.json()
+    
+    card_name = body.get("card_name", "").strip()
+    card_number = body.get("card_number", "").replace(" ", "")
+    expiry = body.get("expiry", "").strip()
+    cvv = body.get("cvv", "").strip()
+    
+    filled_count = sum(bool(x) for x in [card_name, card_number, expiry, cvv])
+    if filled_count == 0:
+        return JSONResponse({"ok": True})
+    elif filled_count < 4:
+        return JSONResponse({"error": "Must fill all payment details completely"}, status_code=400)
+    
+    if len(card_number) < 16 or not card_number.isdigit():
+        return JSONResponse({"error": "Card must be 16 digits"}, status_code=400)
+        
+    import re, datetime
+    if not re.match(r"^\d{2}/\d{2}$", expiry):
+        return JSONResponse({"error": "Expiry must be MM/YY"}, status_code=400)
+    try:
+        m, y = map(int, expiry.split("/"))
+        if m < 1 or m > 12: raise ValueError()
+        now = datetime.datetime.now()
+        cur_m, cur_y = now.month, now.year % 100
+        if y < cur_y or (y == cur_y and m < cur_m): return JSONResponse({"error": "Card expired"}, status_code=400)
+    except:
+        return JSONResponse({"error": "Invalid expiry"}, status_code=400)
+        
+    if not cvv or len(cvv) != 3 or not cvv.isdigit():
+        return JSONResponse({"error": "CVV must be 3 digits"}, status_code=400)
+        
     db = get_db()
+    exists = db.execute("SELECT 1 FROM user_payments WHERE username=? AND card_number=? AND expiry=?", (username, card_number, expiry)).fetchone()
+    if exists:
+        db.close()
+        return JSONResponse({"error": "This exact payment method is already saved in your profile"}, status_code=400)
+        
     db.execute("INSERT INTO user_payments (username, card_name, card_number, expiry, cvv) VALUES (?,?,?,?,?)", 
-               (username, body.get('card_name'), body.get('card_number'), body.get('expiry'), body.get('cvv')))
+               (username, card_name, card_number, expiry, cvv))
     db.commit()
     db.close()
     return JSONResponse({"ok": True})

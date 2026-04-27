@@ -37,13 +37,15 @@
     <div style="display:flex; justify-content:center; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
       <input type="text" id="store-search" placeholder="Search costumes..." oninput="renderStore()"
         style="padding:10px; border-radius:10px; border:2px solid #e5e7eb; width: 300px; font-family:'Nunito'; outline:none;">
-      <select id="store-sort" onchange="renderStore()"
+        <div class="select-wrapper">
+      <select class="select-card" id="store-sort" onchange="renderStore()"
         style="padding:10px; border-radius:10px; border:2px solid #e5e7eb; font-family:'Nunito'; outline:none;">
         <option value="none">Sort By / Filter</option>
         <option value="price-asc">Price: Low to High</option>
         <option value="price-desc">Price: High to Low</option>
         <option value="abc">Alphabetical</option>
       </select>
+        </div>
     </div>
     <div class="grid" id="costume-grid">
       <!-- Cards loaded dynamically -->
@@ -344,8 +346,7 @@
               <div class="card-desc">${p.description}</div>
               <div class="card-footer" style="align-items: center;">
                 <span class="card-price" style="margin-right:auto;">₪${p.price}</span>
-                <button class="add-btn" style="background-color:#9CA3AF; margin-right:5px;" onclick="openProductModal(${p.id})">Reviews</button>
-                <button class="add-btn" onclick="addToCart(${p.id}, this)">Cart</button>
+                <button class="add-btn" onclick="addToCart(${p.id}, this)">Add To Cart</button>
               </div>
             </div>`;
         grid.appendChild(card);

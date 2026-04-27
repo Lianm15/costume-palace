@@ -9,6 +9,7 @@
     <nav>
         <div class="logo">Costume <span>Palace</span></div>
         <div class="nav-links">
+            <a href="/wishlist">Wishlist ❤️</a>
             <a href="/cart">Back To Cart</a>
         </div>
     </nav>
@@ -32,26 +33,47 @@
                     <input type="email" class="text-box" id="chk-email" placeholder="Email" style="width: 100%;">
                     <small class="error-msg" id="email-error"></small>
                 </div>
-                <input type="text" class="text-box" id="chk-address" placeholder="Address" style="width: 100%;">
-                <div class="field">
-                    <input type="text" class="text-box" id="chk-postal" placeholder="Postal Code (7 digits)" style="width: 100%;">
-                    <small class="error-msg" id="postal-error"></small>
+                <h4 style="padding-top: 1rem;">Shipping Address</h4>
+                <select id="addr-select" style="width: 100%; border:1px solid #d1d5db; border-radius:8px; padding:10px; margin-bottom:10px;" onchange="fillAddress()">
+                   <option value="new">New Address...</option>
+                </select>
+                <div id="new-addr-fields">
+                  <input type="text" class="text-box" id="chk-address" placeholder="Address" style="width: 100%;">
+                  <div class="field" style="margin-top:10px;">
+                      <input type="text" class="text-box" id="chk-postal" placeholder="Postal Code (7 digits)" style="width: 100%;">
+                      <small class="error-msg" id="postal-error"></small>
+                  </div>
+                  <div style="margin-top:10px; display:flex; align-items:center; gap:8px;">
+                     <input type="checkbox" id="save-addr-chk">
+                     <label style="color:#4b5563;">Save this address for future orders</label>
+                  </div>
+                  <input type="text" id="save-addr-name" class="text-box" placeholder="Address Name (e.g. Home)" style="width:100%; margin-top:10px; display:none;">
                 </div>
                 </div>
                 <div class="card-details">
                 <h4 style="padding-top: 1rem;">Credit Card Details</h4>
-                <input type="text" class="text-box" placeholder="Card Owner Name">
-                <div class="field">
+                <select id="card-select" style="width: 100%; border:1px solid #d1d5db; border-radius:8px; padding:10px; margin-bottom:10px;" onchange="fillCard()">
+                   <option value="new">New Payment Method...</option>
+                </select>
+                <div id="new-card-fields">
+                <input type="text" id="chk-cardname" class="text-box" placeholder="Card Owner Name">
+                <div class="field" style="margin-top:10px;">
                     <input type="text" class="text-box" id="creditcard-number" placeholder="Credit Card Number">
                     <small class="error-msg" id="card-error"></small>
                 </div>
-                <div class="field">
+                <div class="field" style="margin-top:10px;">
                     <input type="text" class="text-box" id="date-number" placeholder="MM/YY">
                     <small class="error-msg" id="date-error"></small>
                 </div>
-                <div class="field">
+                <div class="field" style="margin-top:10px;">
                     <input type="text" class="text-box" id="cvv-number" placeholder="CVV">
                     <small class="error-msg" id="cvv-error"></small>
+                </div>
+                <div style="margin-top:10px; display:flex; align-items:center; gap:8px;">
+                   <input type="checkbox" id="save-card-chk">
+                   <label style="color:#4b5563;">Save this card for future orders</label>
+                </div>
+                <input type="text" id="save-card-name" class="text-box" placeholder="Card Name (e.g. Personal)" style="width:100%; margin-top:10px; display:none;">
                 </div>
                 </div>
             </div>
@@ -66,6 +88,68 @@
 
     <script>
         let cartItems = [];
+        let userAddresses = [];
+        let userPayments = [];
+
+        fetch('/api/profile').then(r=>r.json()).then(data => {
+            if(!data.error) {
+                document.getElementById('chk-name').value = data.full_name || '';
+                document.getElementById('chk-email').value = data.email || '';
+                document.getElementById('chk-phone').value = data.phone || '';
+            }
+        });
+
+        fetch('/api/profile/addresses').then(r=>r.json()).then(data => {
+            userAddresses = data;
+            const sel = document.getElementById('addr-select');
+            data.forEach((a, i) => sel.innerHTML += `<option value="${i}">${a.address_name}</option>`);
+            if(data.length > 0) { sel.value = '0'; fillAddress(); }
+        });
+
+        fetch('/api/profile/payments').then(r=>r.json()).then(data => {
+            userPayments = data;
+            const sel = document.getElementById('card-select');
+            data.forEach((p, i) => sel.innerHTML += `<option value="${i}">${p.card_name} (****${p.card_number.slice(-4) || '****'})</option>`);
+            if(data.length > 0) { sel.value = '0'; fillCard(); }
+        });
+
+        function fillAddress() {
+            const val = document.getElementById('addr-select').value;
+            if(val === 'new') {
+                document.getElementById('chk-address').value = '';
+                document.getElementById('chk-postal').value = '';
+                document.getElementById('save-addr-chk').checked = false;
+                document.getElementById('save-addr-name').style.display = 'none';
+            } else {
+                document.getElementById('chk-address').value = userAddresses[val].address;
+                document.getElementById('chk-postal').value = userAddresses[val].postal_code;
+                document.getElementById('save-addr-chk').checked = false;
+                document.getElementById('save-addr-name').style.display = 'none';
+            }
+        }
+
+        function fillCard() {
+            const val = document.getElementById('card-select').value;
+            if(val === 'new') {
+                document.getElementById('chk-cardname').value = '';
+                document.getElementById('creditcard-number').value = '';
+                document.getElementById('date-number').value = '';
+                document.getElementById('cvv-number').value = '';
+                document.getElementById('save-card-chk').checked = false;
+                document.getElementById('save-card-name').style.display = 'none';
+            } else {
+                document.getElementById('chk-cardname').value = userPayments[val].username;
+                document.getElementById('creditcard-number').value = userPayments[val].card_number;
+                document.getElementById('date-number').value = userPayments[val].expiry;
+                document.getElementById('cvv-number').value = userPayments[val].cvv;
+                document.getElementById('save-card-chk').checked = false;
+                document.getElementById('save-card-name').style.display = 'none';
+            }
+        }
+
+        document.getElementById('save-addr-chk').addEventListener('change', e => document.getElementById('save-addr-name').style.display = e.target.checked ? 'block' : 'none');
+        document.getElementById('save-card-chk').addEventListener('change', e => document.getElementById('save-card-name').style.display = e.target.checked ? 'block' : 'none');
+
         fetch('/api/cart/')
         .then(r => r.json())
         .then(items => {
@@ -226,14 +310,26 @@
             fetch('/api/checkout', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({phone, email, postal})
+                body: JSON.stringify({
+                    phone: phone, 
+                    email: email, 
+                    postal: postal,
+                    save_address: document.getElementById('save-addr-chk').checked,
+                    address_name: document.getElementById('save-addr-name').value,
+                    address: document.getElementById('chk-address').value,
+                    save_payment: document.getElementById('save-card-chk').checked,
+                    card_name: document.getElementById('save-card-name').value,
+                    card_number: document.getElementById('creditcard-number').value,
+                    expiry: document.getElementById('date-number').value,
+                    cvv: document.getElementById('cvv-number').value
+                })
             }).then(r => r.json()).then(data => {
                 if (data.error) {
                     alert(data.error);
                     btn.textContent = "Submit Order";
                 } else {
-                    alert("Order Completed");
-                    window.location.href="/";
+                    alert("Order Completed! Your Reference is: CP-" + (10000 + parseInt(data.order_id)));
+                    window.location.href="/profile";
                 }
             }).catch(e => {
                 alert("An error occurred");

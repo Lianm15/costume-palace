@@ -12,6 +12,8 @@
   <div class="nav-links">
     <a href="#" class="login">Login</a>
     <a href="/">Home</a>
+    <a href="/wishlist">Wishlist ❤️</a>
+    <a href="/cart">Cart 🛒</a>
   </div>
 </nav>
 
@@ -20,15 +22,57 @@
 
   <div style="max-width:600px; margin:30px auto; justify-items: center;">
 
+    <!-- Personal Details Form -->
+    <h2 style="padding-top: 2rem; font-family:'Fredoka One'; color:#4b5563;">My Details</h2>
+    <div style="background:#fff; border-radius:15px; box-shadow:0 4px 15px rgba(0,0,0,0.05); padding:30px; margin-top:1rem; text-align:left;">
+      <div style="margin-bottom:15px;">
+        <label style="display:block; font-weight:bold; color:#374151; margin-bottom:5px;">Full Name</label>
+        <input type="text" id="prof-fullname" class="text-box" style="width:100%; border:1px solid #d1d5db; border-radius:8px; padding:10px;" placeholder="John Doe">
+      </div>
+      <div style="margin-bottom:15px;">
+        <label style="display:block; font-weight:bold; color:#374151; margin-bottom:5px;">Email</label>
+        <input type="email" id="prof-email" class="text-box" style="width:100%; border:1px solid #d1d5db; border-radius:8px; padding:10px;" placeholder="examplename@gmail.com">
+      </div>
+      <div style="margin-bottom:15px;">
+        <label style="display:block; font-weight:bold; color:#374151; margin-bottom:5px;">Phone Number</label>
+        <input type="text" id="prof-phone" class="text-box" style="width:100%; border:1px solid #d1d5db; border-radius:8px; padding:10px;" placeholder="05XXXXXXXX">
+      </div>
+      <button class="submit-btn" style="width:100%; font-size:1.1rem; padding:12px; background:#a855f7; border-radius:10px;" onclick="saveProfile()">Save Details</button>
+      <p id="prof-msg" style="text-align:center; margin-top:10px; font-weight:bold;"></p>
+    </div>
 
-    <h2 style="padding-top: 2rem;">My Orders</h2>
-    <div id="orders"></div>
+    <!-- Saved Addresses -->
+    <h2 style="padding-top: 2rem; font-family:'Fredoka One'; color:#4b5563;">Saved Addresses</h2>
+    <div id="addresses" style="width:100%; margin-top:1rem; display:flex; flex-direction:column; gap:10px;"></div>
+    
+    <div style="background:#fff; border-radius:15px; box-shadow:0 4px 15px rgba(0,0,0,0.05); padding:20px; margin-top:1rem; text-align:left;">
+      <h3 style="margin-bottom:10px; font-size:1.1rem; color:#374151;">Add New Address</h3>
+      <input type="text" id="new-addr-name" class="text-box" style="width:100%; border:1px solid #d1d5db; border-radius:8px; padding:8px; margin-bottom:10px;" placeholder="Name (e.g. Home, Work)">
+      <input type="text" id="new-addr-val" class="text-box" style="width:100%; border:1px solid #d1d5db; border-radius:8px; padding:8px; margin-bottom:10px;" placeholder="Address (Street, City)">
+      <input type="text" id="new-addr-postal" class="text-box" style="width:100%; border:1px solid #d1d5db; border-radius:8px; padding:8px; margin-bottom:10px;" placeholder="Postal Code (7 digits)">
+      <button class="submit-btn" style="width:100%; background:#10b981; border-radius:8px; padding:8px;" onclick="addAddress()">Save Address</button>
+    </div>
+
+    <!-- Saved Cards -->
+    <h2 style="padding-top: 2rem; font-family:'Fredoka One'; color:#4b5563;">Saved Payment Methods</h2>
+    <div id="payments" style="width:100%; margin-top:1rem; display:flex; flex-direction:column; gap:10px;"></div>
+    
+    <div style="background:#fff; border-radius:15px; box-shadow:0 4px 15px rgba(0,0,0,0.05); padding:20px; margin-top:1rem; text-align:left;">
+      <h3 style="margin-bottom:10px; font-size:1.1rem; color:#374151;">Add New Card</h3>
+      <input type="text" id="new-card-name" class="text-box" style="width:100%; border:1px solid #d1d5db; border-radius:8px; padding:8px; margin-bottom:10px;" placeholder="Name (e.g. Personal, Business)">
+      <input type="text" id="new-card-num" class="text-box" style="width:100%; border:1px solid #d1d5db; border-radius:8px; padding:8px; margin-bottom:10px;" placeholder="Card Number (16 digits)">
+      <input type="text" id="new-card-exp" class="text-box" style="width:100%; border:1px solid #d1d5db; border-radius:8px; padding:8px; margin-bottom:10px;" placeholder="Expiry (MM/YY)">
+      <input type="text" id="new-card-cvv" class="text-box" style="width:100%; border:1px solid #d1d5db; border-radius:8px; padding:8px; margin-bottom:10px;" placeholder="CVV (3 digits)">
+      <button class="submit-btn" style="width:100%; background:#10b981; border-radius:8px; padding:8px;" onclick="addPayment()">Save Card</button>
+    </div>
+
+    <h2 style="padding-top: 2rem; font-family:'Fredoka One'; color:#a855f7;">My Orders</h2>
+    <div id="orders" style="width:100%; margin-top:1rem;"></div>
 
     <div style="justify-content: center; padding-top: 2rem; ">
       <button class="submit-btn" onclick="logout()">Logout</button>
     </div>
 
-  </div>
   </div>
 
 <script>
@@ -89,7 +133,7 @@ fetch('/api/orders', {
       box.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f3f4f6; padding-bottom:10px; margin-bottom:15px;">
           <div>
-            <h3 style="margin:0; color:#ff6b35; font-family:'Fredoka One',cursive;">Order #${o.id}</h3>
+            <h3 style="margin:0; color:#ff6b35; font-family:'Fredoka One',cursive;">Order Ref: CP-${10000 + parseInt(o.id)}</h3>
             <small style="color:#9ca3af;">${dateStr}</small>
           </div>
           <div style="text-align:right;">
@@ -122,6 +166,122 @@ fetch('/api/orders', {
         });
     });
   });
+
+// load profile details
+fetch('/api/profile')
+  .then(r => r.json())
+  .then(data => {
+    if(!data.error) {
+      document.getElementById('prof-fullname').value = data.full_name || '';
+      document.getElementById('prof-email').value = data.email || '';
+      document.getElementById('prof-phone').value = data.phone || '';
+    }
+  });
+
+function saveProfile() {
+  const email = document.getElementById('prof-email').value;
+  const phone = document.getElementById('prof-phone').value;
+  const msg = document.getElementById('prof-msg');
+  
+  if (email && !email.endsWith('@gmail.com')) { msg.textContent = '❌ Email must be a @gmail.com address'; msg.style.color = '#ef4444'; return; }
+  if (phone && !/^0\d{9}$/.test(phone)) { msg.textContent = '❌ Phone must be 10 digits starting with 0'; msg.style.color = '#ef4444'; return; }
+  
+  fetch('/api/profile', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      full_name: document.getElementById('prof-fullname').value,
+      email: email,
+      phone: phone
+    })
+  }).then(r => r.json()).then(data => {
+      msg.textContent = '✔️ Profile Saved Successfully!';
+      msg.style.color = '#10b981';
+      setTimeout(() => msg.textContent = '', 3000);
+  });
+}
+
+function loadAddresses() {
+  fetch('/api/profile/addresses').then(r=>r.json()).then(data => {
+    const div = document.getElementById('addresses');
+    div.innerHTML = '';
+    if(!data.length) { div.innerHTML='<p style="text-align:center; color:#6b7280;">No saved addresses</p>'; }
+    data.forEach(a => {
+      div.innerHTML += `
+        <div style="background:#f9fafb; padding:15px; border-radius:10px; display:flex; justify-content:space-between; align-items:center; border:1px solid #e5e7eb;">
+          <div>
+            <strong style="color:#374151;">${a.address_name}</strong>
+            <p style="margin:5px 0 0 0; color:#6b7280; font-size:0.9rem;">${a.address} · ${a.postal_code}</p>
+          </div>
+          <button style="background:none; border:none; color:#ef4444; font-size:1.2rem; cursor:pointer;" onclick="deleteAddress(${a.id})">🗑️</button>
+        </div>`;
+    });
+  });
+}
+
+function addAddress() {
+  fetch('/api/profile/addresses', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      address_name: document.getElementById('new-addr-name').value,
+      address: document.getElementById('new-addr-val').value,
+      postal_code: document.getElementById('new-addr-postal').value
+    })
+  }).then(() => {
+    document.getElementById('new-addr-name').value = '';
+    document.getElementById('new-addr-val').value = '';
+    document.getElementById('new-addr-postal').value = '';
+    loadAddresses();
+  });
+}
+
+function deleteAddress(id) { fetch('/api/profile/addresses/'+id, {method:'DELETE'}).then(()=>loadAddresses()); }
+
+
+function loadPayments() {
+  fetch('/api/profile/payments').then(r=>r.json()).then(data => {
+    const div = document.getElementById('payments');
+    div.innerHTML = '';
+    if(!data.length) { div.innerHTML='<p style="text-align:center; color:#6b7280;">No saved cards</p>'; }
+    data.forEach(p => {
+      const obfuscated = '**** **** **** ' + (p.card_number.slice(-4) || '****');
+      div.innerHTML += `
+        <div style="background:#f9fafb; padding:15px; border-radius:10px; display:flex; justify-content:space-between; align-items:center; border:1px solid #e5e7eb;">
+          <div>
+            <strong style="color:#374151;">${p.card_name}</strong>
+            <p style="margin:5px 0 0 0; color:#6b7280; font-size:0.9rem;">${obfuscated} · Exp: ${p.expiry}</p>
+          </div>
+          <button style="background:none; border:none; color:#ef4444; font-size:1.2rem; cursor:pointer;" onclick="deletePayment(${p.id})">🗑️</button>
+        </div>`;
+    });
+  });
+}
+
+function addPayment() {
+  fetch('/api/profile/payments', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      card_name: document.getElementById('new-card-name').value,
+      card_number: document.getElementById('new-card-num').value,
+      expiry: document.getElementById('new-card-exp').value,
+      cvv: document.getElementById('new-card-cvv').value
+    })
+  }).then(() => {
+    document.getElementById('new-card-name').value = '';
+    document.getElementById('new-card-num').value = '';
+    document.getElementById('new-card-exp').value = '';
+    document.getElementById('new-card-cvv').value = '';
+    loadPayments();
+  });
+}
+
+function deletePayment(id) { fetch('/api/profile/payments/'+id, {method:'DELETE'}).then(()=>loadPayments()); }
+
+loadAddresses();
+loadPayments();
+
 </script>
 
 </body>

@@ -24,10 +24,15 @@ def init_db():
     # -------------------------------------------------
     conn.execute("""
         CREATE TABLE IF NOT EXISTS users (
-            id       INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE,
-            password TEXT,
-            is_admin INTEGER DEFAULT 0
+            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            username    TEXT UNIQUE,
+            password    TEXT,
+            is_admin    INTEGER DEFAULT 0,
+            full_name   TEXT,
+            email       TEXT,
+            phone       TEXT,
+            address     TEXT,
+            postal_code TEXT
         )
     """)
 
@@ -57,7 +62,8 @@ def init_db():
             product_id INTEGER,
             username   TEXT,
             content    TEXT,
-            rating     INTEGER
+            rating     INTEGER,
+            hidden     INTEGER DEFAULT 0
         )
     """)
 
@@ -92,9 +98,77 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             order_id INTEGER,
             product_id INTEGER,
-            quantity INTEGER
+            quantity INTEGER,
+            price_at_purchase REAL
         )
     """)
+
+    # Audit logs table
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS audit_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            admin_username TEXT,
+            action TEXT,
+            target_type TEXT,
+            target_id INTEGER,
+            details TEXT,
+            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    
+    # Wishlist table
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS wishlist (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT,
+            product_id INTEGER,
+            UNIQUE(username, product_id)
+        )
+    """)
+
+    # -------------------------------------------------
+    # Backward Compatibility Migrations
+    # -------------------------------------------------
+    try:
+        conn.execute("ALTER TABLE reviews ADD COLUMN hidden INTEGER DEFAULT 0")
+    except sqlite3.OperationalError:
+        pass
+
+    try:
+        conn.execute("ALTER TABLE order_items ADD COLUMN price_at_purchase REAL")
+    except sqlite3.OperationalError:
+        pass
+        
+    for col in ["full_name", "email", "phone", "address", "postal_code"]:
+        try:
+            conn.execute(f"ALTER TABLE users ADD COLUMN {col} TEXT")
+        except sqlite3.OperationalError:
+            pass
+            
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS user_addresses (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT,
+            address_name TEXT,
+            address TEXT,
+            postal_code TEXT
+        )
+    """)
+
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS user_payments (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT,
+            card_name TEXT,
+            card_number TEXT,
+            expiry TEXT,
+            cvv TEXT
+        )
+    """)
+    
+    conn.commit()
+
+
 
 
     # -------------------------------------------------

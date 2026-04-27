@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>Admin Dashboard - Costume Palace</title>
   <link rel="stylesheet" href="/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     /* Admin specific styles to supplement existing styles */
     .admin-layout {
@@ -130,24 +131,44 @@
       <button onclick="showTab('products')">👗 Products</button>
       <button onclick="showTab('orders')">📦 Orders</button>
       <button onclick="showTab('users')">👥 Users</button>
+      <button onclick="showTab('reviews')">⭐ Reviews</button>
     </div>
 
     <div class="content-area">
       <!-- DASHBOARD TAB -->
       <div id="tab-dashboard" class="tab-content active">
-        <h2 style="font-family:'Fredoka One'; margin-bottom:1rem; color:#2d2d2d;">Overview</h2>
-        <div class="dashboard-cards">
+        <h2 style="font-family:'Fredoka One'; margin-bottom:1rem; color:#2d2d2d;">Overview & Analytics</h2>
+        <div class="dashboard-cards" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px;">
           <div class="db-card">
-            <h3 id="stat-products">0</h3>
-            <p>Total Products</p>
+            <h3 id="stat-revenue">₪0</h3>
+            <p>Total Revenue</p>
           </div>
           <div class="db-card">
-            <h3 id="stat-orders">0</h3>
-            <p>Total Orders</p>
+            <h3 id="stat-month-rev">₪0</h3>
+            <p>Current Month Revenue</p>
           </div>
           <div class="db-card">
-            <h3 id="stat-users">0</h3>
-            <p>Registered Users</p>
+            <h3 id="stat-avg">₪0</h3>
+            <p>Avg Order Value</p>
+          </div>
+          <div class="db-card">
+            <h3 id="stat-best-prod" style="font-size:1.5rem;">N/A</h3>
+            <p>Top Product</p>
+          </div>
+          <div class="db-card">
+            <h3 id="stat-best-cust" style="font-size:1.5rem;">N/A</h3>
+            <p>Top Customer</p>
+          </div>
+        </div>
+        
+        <div style="display:flex; gap:20px; flex-wrap:wrap; margin-top:20px;">
+          <div style="flex:1; background:white; padding:1.5rem; border-radius:15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); min-width:300px;">
+             <h3 style="margin-bottom:15px; color:#2d2d2d;">Monthly Revenue</h3>
+             <canvas id="revenueChart"></canvas>
+          </div>
+          <div style="flex:1; background:white; padding:1.5rem; border-radius:15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); min-width:300px;">
+             <h3 style="margin-bottom:15px; color:#2d2d2d;">Product Sales</h3>
+             <canvas id="productChart"></canvas>
           </div>
         </div>
       </div>
@@ -155,7 +176,15 @@
       <!-- PRODUCTS TAB -->
       <div id="tab-products" class="tab-content">
         <h2 style="font-family:'Fredoka One'; margin-bottom:1rem; color:#2d2d2d;">Product Management</h2>
-        <div class="top-action">
+        <div class="top-action" style="justify-content: space-between; display: flex;">
+          <div style="flex:1; display:flex; gap:10px;">
+            <input type="text" id="prod-search" placeholder="Search product name..." oninput="renderProducts()" style="padding:5px; border-radius:5px; border:1px solid #ccc;">
+            <select id="prod-filter" onchange="renderProducts()" style="padding:5px; border-radius:5px;">
+              <option value="all">All Status</option>
+              <option value="visible">Visible</option>
+              <option value="hidden">Hidden</option>
+            </select>
+          </div>
           <button class="submit-btn" style="width: auto; padding: 0.5rem 1rem;" onclick="openProductModal()">+ Add Product</button>
         </div>
         <table>
@@ -176,6 +205,16 @@
       <!-- ORDERS TAB -->
       <div id="tab-orders" class="tab-content">
         <h2 style="font-family:'Fredoka One'; margin-bottom:1rem; color:#2d2d2d;">Order Management</h2>
+        <div class="top-action" style="justify-content: flex-start; display: flex; margin-bottom: 1rem; gap: 10px;">
+          <input type="text" id="order-search" placeholder="Search username..." oninput="renderOrders()" style="padding:5px; border-radius:5px; border:1px solid #ccc;">
+          <select id="order-filter" onchange="renderOrders()" style="padding:5px; border-radius:5px;">
+            <option value="all">All Status</option>
+            <option value="Pending">Pending</option>
+            <option value="Approved">Approved</option>
+            <option value="Shipped">Shipped</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
+        </div>
         <table>
           <thead>
             <tr>
@@ -193,19 +232,49 @@
       <!-- USERS TAB -->
       <div id="tab-users" class="tab-content">
         <h2 style="font-family:'Fredoka One'; margin-bottom:1rem; color:#2d2d2d;">User Management</h2>
+        <div class="top-action" style="justify-content: flex-start; display: flex; margin-bottom: 1rem; gap: 10px;">
+          <input type="text" id="user-search" placeholder="Search username..." oninput="renderUsers()" style="padding:5px; border-radius:5px; border:1px solid #ccc;">
+        </div>
         <table>
           <thead>
             <tr>
               <th>ID</th>
               <th>Username</th>
               <th>Role</th>
-              <th>Actions</th>
             </tr>
           </thead>
           <tbody id="users-tbody"></tbody>
         </table>
       </div>
 
+      <!-- REVIEWS TAB -->
+      <div id="tab-reviews" class="tab-content">
+        <h2 style="font-family:'Fredoka One'; margin-bottom:1rem; color:#2d2d2d;">Review Moderation</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Product</th>
+              <th>User</th>
+              <th>Rating</th>
+              <th>Content</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="reviews-tbody"></tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Order Modal -->
+  <div class="modal-overlay" id="orderModal">
+    <div class="modal-box" style="max-width: 600px; max-height:80vh; overflow-y:auto;">
+      <button class="modal-close" onclick="closeOrderModal()">×</button>
+      <h2 id="order-modal-title">Order Details</h2>
+      <div id="order-modal-content" style="margin-top: 1rem;"></div>
     </div>
   </div>
 
@@ -235,7 +304,34 @@
     </div>
   </div>
 
+  <!-- Confirm Modal -->
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal-box" style="text-align:center; max-width:400px; padding:2rem;">
+      <h2 style="margin-bottom:1rem; color:#2d2d2d; font-family:'Fredoka One';">Please Confirm</h2>
+      <p id="confirm-msg" style="margin-bottom:2rem; font-size:1.1rem; color:#6b7280;"></p>
+      <div style="display:flex; justify-content:center; gap:15px;">
+        <button class="submit-btn" style="background:#e5e7eb; color:#374151; width:auto; padding:0.5rem 1.5rem;" onclick="closeConfirm()">Cancel</button>
+        <button class="submit-btn" style="background:#ef4444; width:auto; padding:0.5rem 1.5rem;" onclick="doConfirm()">Confirm</button>
+      </div>
+    </div>
+  </div>
+
   <script>
+    let confirmCallback = null;
+    function openConfirm(msg, callback) {
+        document.getElementById('confirm-msg').innerText = msg;
+        document.getElementById('confirmModal').classList.add('active');
+        confirmCallback = callback;
+    }
+    function closeConfirm() {
+        document.getElementById('confirmModal').classList.remove('active');
+        confirmCallback = null;
+    }
+    function doConfirm() {
+        if(confirmCallback) confirmCallback();
+        closeConfirm();
+    }
+
     function logout() {
       window.location.href = "/logout";
     }
@@ -249,6 +345,7 @@
       if(tabId === 'products') loadProducts();
       if(tabId === 'orders') loadOrders();
       if(tabId === 'users') loadUsers();
+      if(tabId === 'reviews') loadReviews();
       if(tabId === 'dashboard') loadStats();
     }
 
@@ -256,44 +353,88 @@
     loadStats();
 
     // Stats
+    let revChartInstance = null;
+    let prodChartInstance = null;
     function loadStats() {
-      fetch('/api/admin/products').then(r=>r.json()).then(d => {
-        document.getElementById('stat-products').innerText = d.length || 0;
-      }).catch(e=>{});
-      fetch('/api/admin/orders').then(r=>r.json()).then(d => {
-        document.getElementById('stat-orders').innerText = d.length || 0;
-      }).catch(e=>{});
-      fetch('/api/admin/users').then(r=>r.json()).then(d => {
-        document.getElementById('stat-users').innerText = d.length || 0;
-      }).catch(e=>{});
+      fetch('/api/admin/analytics')
+        .then(r => r.json())
+        .then(data => {
+          document.getElementById('stat-revenue').innerText = '₪' + data.total_revenue;
+          document.getElementById('stat-month-rev').innerText = '₪' + data.monthly_revenue;
+          document.getElementById('stat-avg').innerText = '₪' + data.avg_order_value;
+          document.getElementById('stat-best-prod').innerText = data.best_product;
+          document.getElementById('stat-best-cust').innerText = data.best_customer;
+          
+          renderCharts(data.monthly_chart, data.product_chart);
+        }).catch(err => console.error("Error loading analytics:", err));
+    }
+    
+    function renderCharts(monthlyData, productData) {
+       const revCtx = document.getElementById('revenueChart').getContext('2d');
+       if(revChartInstance) revChartInstance.destroy();
+       revChartInstance = new Chart(revCtx, {
+           type: 'line',
+           data: {
+               labels: monthlyData.map(d => d.month),
+               datasets: [{
+                   label: 'Revenue (₪)',
+                   data: monthlyData.map(d => d.rev),
+                   borderColor: '#a855f7',
+                   backgroundColor: 'rgba(168, 85, 247, 0.2)',
+                   tension: 0.3, fill: true
+               }]
+           }
+       });
+       
+       const prodCtx = document.getElementById('productChart').getContext('2d');
+       if(prodChartInstance) prodChartInstance.destroy();
+       prodChartInstance = new Chart(prodCtx, {
+           type: 'doughnut',
+           data: {
+               labels: productData.map(d => d.name),
+               datasets: [{
+                   data: productData.map(d => d.sold),
+                   backgroundColor: ['#ff6b35', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#f43f5e', '#14b8a6']
+               }]
+           }
+       });
     }
 
     // PRODUCTS
     let productsList = [];
     function loadProducts() {
-      fetch('/api/admin/products')
-        .then(r => r.json())
-        .then(data => {
-          productsList = data;
-          const tbody = document.getElementById('products-tbody');
-          tbody.innerHTML = '';
-          data.forEach(p => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-              <td>${p.id}</td>
-              <td><img src="/images/${p.image}" style="width:40px; height:40px; border-radius:5px; object-fit:cover;"></td>
-              <td>${p.name}</td>
-              <td>₪${p.price}</td>
-              <td>${p.hidden ? '<span style="color:red">Hidden</span>' : '<span style="color:green">Visible</span>'}</td>
-              <td>
-                <button class="action-btn btn-edit" onclick="editProduct(${p.id})">Edit</button>
-                <button class="action-btn ${p.hidden ? 'btn-show' : 'btn-hide'}" onclick="toggleHideProduct(${p.id}, ${p.hidden})">${p.hidden ? 'Show' : 'Hide'}</button>
-                <button class="action-btn btn-delete" onclick="deleteProduct(${p.id})">Delete</button>
-              </td>
-            `;
-            tbody.appendChild(tr);
-          });
-        });
+      fetch('/api/admin/products').then(r => r.json()).then(data => {
+        productsList = data;
+        renderProducts();
+      });
+    }
+    
+    function renderProducts() {
+      const tbody = document.getElementById('products-tbody');
+      tbody.innerHTML = '';
+      const filter = document.getElementById('prod-filter').value;
+      const search = document.getElementById('prod-search').value.toLowerCase();
+      
+      productsList.forEach(p => {
+        if(filter === 'visible' && p.hidden) return;
+        if(filter === 'hidden' && !p.hidden) return;
+        if(search && !p.name.toLowerCase().includes(search)) return;
+        
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${p.id}</td>
+          <td><img src="/images/${p.image}" style="width:40px; height:40px; border-radius:5px; object-fit:cover;"></td>
+          <td>${p.name}</td>
+          <td>₪${p.price}</td>
+          <td>${p.hidden ? '<span style="color:red">Hidden</span>' : '<span style="color:green">Visible</span>'}</td>
+          <td>
+            <button class="action-btn btn-edit" onclick="editProduct(${p.id})">Edit</button>
+            <button class="action-btn ${p.hidden ? 'btn-show' : 'btn-hide'}" onclick="toggleHideProduct(${p.id}, ${p.hidden})">${p.hidden ? 'Show' : 'Hide'}</button>
+            <button class="action-btn btn-delete" onclick="deleteProduct(${p.id})">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
     }
 
     function openProductModal() {
@@ -354,42 +495,81 @@
     }
 
     function deleteProduct(id) {
-      if(!confirm("Are you sure you want to delete this product?")) return;
-      fetch('/api/admin/products/' + id + '/delete', { method: 'POST' }).then(r => {
-        loadProducts();
-        loadStats();
+      openConfirm("Are you sure you want to delete this product?", () => {
+          fetch('/api/admin/products/' + id + '/delete', { method: 'POST' }).then(r => {
+            loadProducts();
+            loadStats();
+          });
       });
     }
 
     // ORDERS
+    let ordersList = [];
     function loadOrders() {
-      fetch('/api/admin/orders')
-        .then(r => r.json())
-        .then(data => {
-          const tbody = document.getElementById('orders-tbody');
-          tbody.innerHTML = '';
-          data.forEach(o => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-              <td>#${o.id}</td>
-              <td>${o.username}</td>
-              <td>₪${o.total}</td>
-              <td>
-                <select onchange="updateOrderStatus(${o.id}, this.value)" style="padding:5px; border-radius:5px;">
-                  <option value="Pending" ${o.status==='Pending'?'selected':''}>Pending</option>
-                  <option value="Approved" ${o.status==='Approved'?'selected':''}>Approved</option>
-                  <option value="Shipped" ${o.status==='Shipped'?'selected':''}>Shipped</option>
-                  <option value="Cancelled" ${o.status==='Cancelled'?'selected':''}>Cancelled</option>
-                </select>
-              </td>
-              <td>
-                <span style="font-size: 0.85rem; color: #6b7280;">${o.items.map(i => i.name + ' x' + i.quantity).join(', ')}</span>
-              </td>
-            `;
-            tbody.appendChild(tr);
-          });
-        });
+      fetch('/api/admin/orders').then(r => r.json()).then(data => {
+        ordersList = data;
+        renderOrders();
+      });
     }
+    
+    function renderOrders() {
+      const tbody = document.getElementById('orders-tbody');
+      tbody.innerHTML = '';
+      const filter = document.getElementById('order-filter').value;
+      const search = document.getElementById('order-search').value.toLowerCase();
+      
+      ordersList.forEach(o => {
+        if(filter !== 'all' && o.status !== filter) return;
+        if(search && !o.username.toLowerCase().includes(search)) return;
+        
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>CP-${10000 + parseInt(o.id)}</td>
+          <td>${o.username}</td>
+          <td>₪${o.total}</td>
+          <td>
+            <select onchange="updateOrderStatus(${o.id}, this.value)" style="padding:5px; border-radius:5px;">
+              <option value="Pending" ${o.status==='Pending'?'selected':''}>Pending</option>
+              <option value="Approved" ${o.status==='Approved'?'selected':''}>Approved</option>
+              <option value="Shipped" ${o.status==='Shipped'?'selected':''}>Shipped</option>
+              <option value="Cancelled" ${o.status==='Cancelled'?'selected':''}>Cancelled</option>
+            </select>
+          </td>
+          <td>
+            <button class="action-btn btn-edit" onclick="viewOrderDetails(${o.id})">Details</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function viewOrderDetails(id) {
+       const o = ordersList.find(x => x.id === id);
+       if(!o) return;
+       document.getElementById('orderModal').classList.add('active');
+       document.getElementById('order-modal-title').innerText = 'Order Ref: CP-' + (10000 + parseInt(o.id));
+       let itemsHtml = o.items.map(i => {
+         return `<div style="display:flex; gap:10px; border-bottom:1px solid #eee; padding-bottom:10px; margin-bottom:10px;">
+           <img src="/images/${i.image}" style="width:50px; height:50px; border-radius:5px; object-fit:cover;">
+           <div>
+             <strong>${i.name}</strong><br>
+             Qty: ${i.quantity} | Unit Price: ₪${i.price_at_purchase !== undefined && i.price_at_purchase !== null ? i.price_at_purchase : i.price}
+           </div>
+         </div>`;
+       }).join('');
+       
+       document.getElementById('order-modal-content').innerHTML = `
+         <p><strong>User:</strong> ${o.username}</p>
+         <p><strong>Status:</strong> ${o.status}</p>
+         <p><strong>Date:</strong> ${o.created_at ? new Date(o.created_at + 'Z').toLocaleString() : 'N/A'}</p>
+         <p><strong>Total:</strong> ₪${o.total}</p>
+         <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
+         <h4>Items:</h4>
+         <div style="margin-top:10px;">${itemsHtml}</div>
+       `;
+    }
+
+    function closeOrderModal() { document.getElementById('orderModal').classList.remove('active'); }
 
     function updateOrderStatus(id, newStatus) {
       fetch('/api/admin/orders/' + id + '/status', {
@@ -400,43 +580,73 @@
     }
 
     // USERS
+    let usersList = [];
     function loadUsers() {
-      fetch('/api/admin/users')
-        .then(r => r.json())
-        .then(data => {
-          const tbody = document.getElementById('users-tbody');
-          tbody.innerHTML = '';
-          data.forEach(u => {
+      fetch('/api/admin/users').then(r => r.json()).then(data => {
+        usersList = data;
+        renderUsers();
+      });
+    }
+    
+    function renderUsers() {
+      const tbody = document.getElementById('users-tbody');
+      tbody.innerHTML = '';
+      const search = document.getElementById('user-search').value.toLowerCase();
+      
+      usersList.forEach(u => {
+        if(search && !u.username.toLowerCase().includes(search)) return;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${u.id}</td>
+          <td>${u.username}</td>
+          <td>${u.is_admin ? '<strong style="color:#a855f7;">Admin</strong>' : 'User'}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // REVIEWS
+    let reviewsList = [];
+    function loadReviews() {
+        fetch('/api/admin/reviews').then(r => r.json()).then(data => {
+            reviewsList = data;
+            renderReviews();
+        });
+    }
+    
+    function renderReviews() {
+        const tbody = document.getElementById('reviews-tbody');
+        tbody.innerHTML = '';
+        reviewsList.forEach(r => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
-              <td>${u.id}</td>
-              <td>${u.username}</td>
-              <td>${u.is_admin ? '<strong style="color:#a855f7;">Admin</strong>' : 'User'}</td>
+              <td>${r.id}</td>
+              <td>${r.product_name} (#${r.product_id})</td>
+              <td>${r.username}</td>
+              <td>${r.rating}/5</td>
+              <td style="max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${r.content}</td>
+              <td>${r.hidden ? '<span style="color:red">Hidden</span>' : '<span style="color:green">Visible</span>'}</td>
               <td>
-                ${!u.is_admin ? '<button class="action-btn btn-admin" onclick="makeAdmin(' + u.id + ')">Make Admin</button>' : ''}
-                <button class="action-btn btn-delete" onclick="blockUser(${u.id})">Block/Delete</button>
+                <button class="action-btn ${r.hidden ? 'btn-show' : 'btn-hide'}" onclick="toggleHideReview(${r.id}, ${r.hidden})">${r.hidden ? 'Show' : 'Hide'}</button>
+                <button class="action-btn btn-delete" onclick="deleteReview(${r.id})">Delete</button>
               </td>
             `;
             tbody.appendChild(tr);
-          });
         });
     }
-
-    function makeAdmin(id) {
-      if(!confirm("Make this user an admin?")) return;
-      fetch('/api/admin/users/' + id + '/admin', {
+    
+    function toggleHideReview(id, currentHidden) {
+      fetch('/api/admin/reviews/' + id + '/hide', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({is_admin: 1})
-      }).then(r => loadUsers());
+        body: JSON.stringify({hidden: currentHidden ? 0 : 1})
+      }).then(r => loadReviews());
     }
-
-    function blockUser(id) {
-      if(!confirm("Are you sure you want to delete/block this user?")) return;
-      fetch('/api/admin/users/' + id + '/block', { method: 'POST' }).then(r => {
-        loadUsers();
-        loadStats();
-      });
+    
+    function deleteReview(id) {
+       openConfirm("Delete this review forever?", () => {
+           fetch('/api/admin/reviews/' + id + '/delete', { method: 'POST' }).then(r => loadReviews());
+       });
     }
   </script>
 </body>

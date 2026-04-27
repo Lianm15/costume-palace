@@ -43,14 +43,44 @@ nav .nav-links a {
   transition: all 0.2s;
 }
 
-/* Login link */
-nav .nav-links a.login {
+nav .nav-links a.login,
+nav .nav-links a.wishlist,
+nav .nav-links a.cart {
   color: #6b7280;
   border: 2px solid #e5e7eb;
+  background: white;
 }
-nav .nav-links a.login:hover {
+nav .nav-links a.login:hover,
+nav .nav-links a.wishlist:hover,
+nav .nav-links a.cart:hover {
   border-color: #a855f7;
   color: #a855f7;
+}
+
+/* Palace Secrets */
+nav .nav-links a.challenges-link {
+  background: linear-gradient(135deg, #a855f7, #6366f1);
+  color: white;
+  border: 2px solid transparent;
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.6),
+              0 0 20px rgba(168, 85, 247, 0.4),
+              0 0 40px rgba(168, 85, 247, 0.2);
+  animation: glow-pulse 2s ease-in-out infinite;
+  position: relative;
+}
+
+
+nav .nav-links a.challenges-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.9),
+              0 0 30px rgba(168, 85, 247, 0.6),
+              0 0 60px rgba(168, 85, 247, 0.3);
+}
+
+@keyframes glow-pulse {
+  0%   { box-shadow: 0 0 10px rgba(168,85,247,0.6), 0 0 20px rgba(168,85,247,0.4), 0 0 40px rgba(168,85,247,0.2); }
+  50%  { box-shadow: 0 0 15px rgba(168,85,247,0.9), 0 0 30px rgba(168,85,247,0.6), 0 0 60px rgba(168,85,247,0.3); }
+  100% { box-shadow: 0 0 10px rgba(168,85,247,0.6), 0 0 20px rgba(168,85,247,0.4), 0 0 40px rgba(168,85,247,0.2); }
 }
 
 /* AI Expert link */

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Wishlist | Costume Palace</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<nav>
+  <div class="logo">Costume <span>Palace</span></div>
+  <div class="nav-links">
+    <a href="#" class="login">Login</a>
+    <a href="/">Home</a>
+    <a href="/wishlist">Wishlist ❤️</a>
+    <a href="/cart">Cart 🛒</a>
+  </div>
+</nav>
+
+<div class="profile-container"></div>
+<h1 style="text-align:center;">My Wishlist</h1>
+
+<div style="max-width:900px; margin:30px auto; display:flex; flex-direction:column; align-items:center; padding: 20px;">
+  <div id="wishlist-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:25px; width:100%;"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+function getCookie(name) {
+  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+  return match ? match[2] : null;
+}
+
+let currentUser = getCookie('username');
+if(!currentUser) { window.location.href = "/"; }
+else {
+  document.querySelector('.nav-links .login').textContent = '👤 ' + currentUser;
+  document.querySelector('.nav-links .login').href = '/profile';
+  if(getCookie('is_admin') === '1') {
+      document.querySelector('.nav-links').innerHTML += '<a href="/admin" class="admin-link">⚙️ Admin</a>';
+  }
+}
+
+function loadWishlist() {
+  fetch('/api/wishlist', { credentials: 'include' })
+    .then(r => r.json())
+    .then(data => {
+      const div = document.getElementById('wishlist-grid');
+      div.innerHTML = '';
+      if(data.length === 0) { div.innerHTML = "<p style='grid-column: 1 / -1; font-size:1.2rem; color:#6b7280; text-align:center;'>Your wishlist is empty. Go find some magic!</p>"; return; }
+      
+      data.forEach(p => {
+         div.innerHTML += `
+  <div class="card">
+    <div class="card-body">
+
+      <img src="/images/${p.image}" alt="${p.name}">
+
+      <div class="card-name">${p.name}</div>
+
+      <div class="card-desc">
+        ₪${p.price}
+      </div>
+
+      <div class="card-footer" style="gap:2px">
+        <button class="add-btn" onclick="addToCart(${p.id}, this)">
+          Add to Cart
+        </button>
+
+        <button class="submit-btn" style="border-radius:20px; width:50%; height:50%; font-size:14px; background: linear-gradient(135deg, #ff6767, #ff1717, #ff6767);" onclick="removeWish(${p.id})">
+          Remove
+        </button>
+      </div>
+
+    </div>
+  </div>
+`;
+      });
+    });
+}
+
+loadWishlist();
+
+function removeWish(id) {
+  fetch('/api/wishlist/toggle', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({product_id:id})
+  }).then(() => {
+     loadWishlist();
+     showToast("Removed from Wishlist");
+  });
+}
+
+function addToCart(productId, btnElement) {
+  const originalText = btnElement.innerText;
+  btnElement.innerText = 'Adding...';
+  btnElement.disabled = true;
+  
+  fetch('/api/cart/add', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ product_id: productId })
+  })
+  .then(r => r.json())
+  .then(data => {
+    btnElement.innerText = 'Added! ✔️';
+    btnElement.style.background = '#10b981'; 
+    setTimeout(() => {
+      btnElement.innerText = originalText;
+      btnElement.disabled = false;
+      btnElement.style.background = '';
+    }, 2000);
+    
+    showToast('Added to Cart! 🛒');
+  });
+}
+
+function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>

@@ -11,6 +11,7 @@
   <div class="logo">Costume <span>Palace</span></div>
   <div class="nav-links">
     <a href="/">Home</a>
+    <a href="/wishlist">Wishlist ❤️</a>
   </div>
 </nav>
 
@@ -24,11 +25,14 @@
 </div>
 
 <script>
+let currentCartCount = 0;
+
 function loadCart() {
   fetch('/api/cart/')
     .then(r => r.json())
     .then(items => {
       console.log(items); 
+      currentCartCount = items.length;
 
       const cart = document.getElementById('cart');
       cart.innerHTML = '';
@@ -82,6 +86,10 @@ function removeItem(id) {
 }
 
 function goToCheckout() {
+  if (currentCartCount === 0) {
+    alert("Your cart is empty. Add some items before checking out!");
+    return;
+  }
   window.location.href = "/checkout";
 }
 

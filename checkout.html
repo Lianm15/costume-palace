@@ -9,6 +9,7 @@
     <nav>
         <div class="logo">Costume <span>Palace</span></div>
         <div class="nav-links">
+            <a href="/wishlist">Wishlist ❤️</a>
             <a href="/cart">Back To Cart</a>
         </div>
     </nav>
@@ -23,15 +24,43 @@
             <div class="input-box">
                 <div class="personal-details">
                 <h4 style="padding-top: 1rem;">Your Details</h4>
-                <input type="text" class="text-box" placeholder="Name">
-                <input type="text" class="text-box" placeholder="Phone Number">
-                <input type="email" class="text-box" placeholder="Email">
-                <input type="text" class="text-box" placeholder="Address">
-                <input type="text" class="text-box" placeholder="Postal Code">
+                <input type="text" class="text-box" id="chk-name" placeholder="Name">
+                <div class="field">
+                    <input type="text" class="text-box" id="chk-phone" placeholder="Phone Number">
+                    <small class="error-msg" id="phone-error"></small>
+                </div>
+                <div class="field">
+                    <input type="email" class="text-box" id="chk-email" placeholder="Email">
+                    <small class="error-msg" id="email-error"></small>
+                </div>
+                <h4 style="padding-top: 1rem;">Shipping Address</h4>
+                <div class="select-wrapper">
+                <select id="addr-select" class="select-card" onchange="fillAddress()">
+                   <option value="new">New Address...</option>
+                </select>
+                </div>
+                <div id="new-addr-fields">
+                  <input type="text" class="text-box" id="chk-address" placeholder="Address" style="width: 100%;">
+                  <div class="field" style="margin-top:10px;">
+                      <input type="text" class="text-box" id="chk-postal" placeholder="Postal Code (7 digits)" style="width: 100%;">
+                      <small class="error-msg" id="postal-error"></small>
+                  </div>
+                  <div id="save-addr-wrapper" style="margin-top:10px; display:flex; align-items:center; gap:8px;">
+                     <input type="checkbox" id="save-addr-chk">
+                     <label style="color:#4b5563; font-size: 14px;">Save this address for future orders</label>
+                  </div>
+                  <input type="text" id="save-addr-name" class="text-box" placeholder="Address Name (e.g. Home)" style="width:100%; margin-top:10px; display:none;">
+                </div>
                 </div>
                 <div class="card-details">
                 <h4 style="padding-top: 1rem;">Credit Card Details</h4>
-                <input type="text" class="text-box" placeholder="Card Owner Name">
+                <div class="select-wrapper">
+                <select id="card-select" class="select-card"" onchange="fillCard()">
+                   <option value="new">New Payment Method...</option>
+                </select>
+                </div>
+                <div id="new-card-fields">
+                <input type="text" id="chk-cardname" class="text-box" placeholder="Card Owner Name">
                 <div class="field">
                     <input type="text" class="text-box" id="creditcard-number" placeholder="Credit Card Number">
                     <small class="error-msg" id="card-error"></small>
@@ -43,6 +72,12 @@
                 <div class="field">
                     <input type="text" class="text-box" id="cvv-number" placeholder="CVV">
                     <small class="error-msg" id="cvv-error"></small>
+                </div>
+                <div id="save-card-wrapper" style=" display:flex; align-items:center; gap:8px;">
+                   <input type="checkbox" id="save-card-chk">
+                   <label style="color:#4b5563; font-size: 14px;">Save this card for future orders</label>
+                </div>
+                <input type="text" id="save-card-name" class="text-box" placeholder="Card Name (e.g. Personal)" style="width:100%; margin-top:10px; display:none;">
                 </div>
                 </div>
             </div>
@@ -56,9 +91,77 @@
     </div>
 
     <script>
+        let cartItems = [];
+        let userAddresses = [];
+        let userPayments = [];
+
+        fetch('/api/profile').then(r=>r.json()).then(data => {
+            if(!data.error) {
+                document.getElementById('chk-name').value = data.full_name || '';
+                document.getElementById('chk-email').value = data.email || '';
+                document.getElementById('chk-phone').value = data.phone || '';
+            }
+        });
+
+        fetch('/api/profile/addresses').then(r=>r.json()).then(data => {
+            userAddresses = data;
+            const sel = document.getElementById('addr-select');
+            data.forEach((a, i) => sel.innerHTML += `<option value="${i}">${a.address_name}</option>`);
+            if(data.length > 0) { sel.value = '0'; fillAddress(); }
+        });
+
+        fetch('/api/profile/payments').then(r=>r.json()).then(data => {
+            userPayments = data;
+            const sel = document.getElementById('card-select');
+            data.forEach((p, i) => sel.innerHTML += `<option value="${i}">${p.card_name} (****${p.card_number.slice(-4) || '****'})</option>`);
+            if(data.length > 0) { sel.value = '0'; fillCard(); }
+        });
+
+        function fillAddress() {
+            const val = document.getElementById('addr-select').value;
+            if(val === 'new') {
+                document.getElementById('chk-address').value = '';
+                document.getElementById('chk-postal').value = '';
+                document.getElementById('save-addr-wrapper').style.display = 'flex';
+                document.getElementById('save-addr-chk').checked = false;
+                document.getElementById('save-addr-name').style.display = 'none';
+            } else {
+                document.getElementById('chk-address').value = userAddresses[val].address;
+                document.getElementById('chk-postal').value = userAddresses[val].postal_code;
+                document.getElementById('save-addr-wrapper').style.display = 'none';
+                document.getElementById('save-addr-chk').checked = false;
+                document.getElementById('save-addr-name').style.display = 'none';
+            }
+        }
+
+        function fillCard() {
+            const val = document.getElementById('card-select').value;
+            if(val === 'new') {
+                document.getElementById('chk-cardname').value = '';
+                document.getElementById('creditcard-number').value = '';
+                document.getElementById('date-number').value = '';
+                document.getElementById('cvv-number').value = '';
+                document.getElementById('save-card-wrapper').style.display = 'flex';
+                document.getElementById('save-card-chk').checked = false;
+                document.getElementById('save-card-name').style.display = 'none';
+            } else {
+                document.getElementById('chk-cardname').value = userPayments[val].card_name;
+                document.getElementById('creditcard-number').value = userPayments[val].card_number;
+                document.getElementById('date-number').value = userPayments[val].expiry;
+                document.getElementById('cvv-number').value = userPayments[val].cvv;
+                document.getElementById('save-card-wrapper').style.display = 'none';
+                document.getElementById('save-card-chk').checked = false;
+                document.getElementById('save-card-name').style.display = 'none';
+            }
+        }
+
+        document.getElementById('save-addr-chk').addEventListener('change', e => document.getElementById('save-addr-name').style.display = e.target.checked ? 'block' : 'none');
+        document.getElementById('save-card-chk').addEventListener('change', e => document.getElementById('save-card-name').style.display = e.target.checked ? 'block' : 'none');
+
         fetch('/api/cart/')
         .then(r => r.json())
         .then(items => {
+            cartItems = items;
             const summary = document.getElementById('summary');
             summary.innerHTML = '';
 
@@ -74,7 +177,7 @@
             </div>
             `;
             });
-            document.getElementById('total').textContent = "Total: ₪" + total;
+            document.getElementById('total').textContent = "Total: ₪" + total.toFixed(2);
         });
 
         const cardInput = document.getElementById("creditcard-number");
@@ -91,25 +194,28 @@
         });
 
         function validateCardNumber() {
-        const raw = cardInput.value.replace(/\s/g, "");
-        const error = document.getElementById("card-error");
+  const raw = cardInput.value.replace(/\s/g, "");
+  const error = document.getElementById("card-error");
 
-        if (raw.length < 16) {
-            error.textContent = "Card must be 16 digits";
-            cardInput.classList.add("input-error");
-            return false;
-        }
+  if (raw.length < 16) {
+    error.textContent = "Card must be 16 digits";
+    error.style.display = "block";
+    cardInput.classList.add("input-error");
+    return false;
+  }
 
-        if (!/^\d+$/.test(raw)) {
-        error.textContent = "Only numbers allowed";
-            cardInput.classList.add("input-error");
-            return false;
-        }
+  if (!/^\d+$/.test(raw)) {
+    error.textContent = "Only numbers allowed";
+    error.style.display = "block";
+    cardInput.classList.add("input-error");
+    return false;
+  }
 
-        error.textContent = "";
-        cardInput.classList.remove("input-error");
-        return true;
-        }
+  error.textContent = "";
+  error.style.display = "none";
+  cardInput.classList.remove("input-error");
+  return true;
+}
 
         const dateInput = document.getElementById("date-number");
 
@@ -126,71 +232,143 @@
         dateInput.addEventListener("blur", validateDate);
 
         function validateDate() {
-        const value = dateInput.value;
-        const error = document.getElementById("date-error");
+  const value = dateInput.value;
+  const error = document.getElementById("date-error");
 
-        if (!/^\d{2}\/\d{2}$/.test(value)) {
-            error.textContent = "Format must be MM/YY";
-            dateInput.classList.add("input-error");
-            return false;
-        }
+  if (!/^\d{2}\/\d{2}$/.test(value)) {
+    error.textContent = "Format must be MM/YY";
+    error.style.display = "block";
+    dateInput.classList.add("input-error");
+    return false;
+  }
 
-        const [month, year] = value.split('/').map(Number);
+  const [month, year] = value.split('/').map(Number);
 
-        if (month < 1 || month > 12) {
-            error.textContent = "Invalid month";
-            dateInput.classList.add("input-error");
-            return false;
-        }
+  if (month < 1 || month > 12) {
+    error.textContent = "Invalid month";
+    error.style.display = "block";
+    dateInput.classList.add("input-error");
+    return false;
+  }
 
-        const now = new Date();
-        const currentYear = now.getFullYear() % 100;
-        const currentMonth = now.getMonth() + 1;
+  const now = new Date();
+  const currentYear = now.getFullYear() % 100;
+  const currentMonth = now.getMonth() + 1;
 
-        if (year < currentYear || (year === currentYear && month < currentMonth)) {
-            error.textContent = "Card expired";
-            dateInput.classList.add("input-error");
-            return false;
-        }
+  if (year < currentYear || (year === currentYear && month < currentMonth)) {
+    error.textContent = "Card expired";
+    error.style.display = "block";
+    dateInput.classList.add("input-error");
+    return false;
+  }
 
-        error.textContent = "";
-        dateInput.classList.remove("input-error");
-        return true;
-        }
+  error.textContent = "";
+  error.style.display = "none";
+  dateInput.classList.remove("input-error");
+  return true;
+}
 
         const cvvInput = document.getElementById("cvv-number");
 
         cvvInput.addEventListener("input", validateCVV);
 
         function validateCVV() {
-        const value = cvvInput.value;
-        const error = document.getElementById("cvv-error");
+  const value = cvvInput.value;
+  const error = document.getElementById("cvv-error");
 
-        if (!/^\d{3}$/.test(value)) {
-            error.textContent = "CVV must be 3 digits";
-            cvvInput.classList.add("input-error");
-            return false;
-        }
+  if (!/^\d{3}$/.test(value)) {
+    error.textContent = "CVV must be 3 digits";
+    error.style.display = "block";
+    cvvInput.classList.add("input-error");
+    return false;
+  }
 
-        error.textContent = "";
-        cvvInput.classList.remove("input-error");
-        return true;
-        }
+  error.textContent = "";
+  error.style.display = "none";
+  cvvInput.classList.remove("input-error");
+  return true;
+}
 
         function submitOrder(){
             const validCard = validateCardNumber();
             const validDate = validateDate();
             const validCVV  = validateCVV();
 
-            if (!validCard || !validDate || !validCVV) return;
+            const phone = document.getElementById('chk-phone').value;
+            const email = document.getElementById('chk-email').value;
+            const postal = document.getElementById('chk-postal').value;
+            
+            let valid = true;
+            if (!/^0\d{9}$/.test(phone)) {
+  const err = document.getElementById('phone-error');
+  err.textContent = 'Must be 10 digits starting with 0';
+  err.style.display = "block";
+  valid = false;
+} else {
+  const err = document.getElementById('phone-error');
+  err.textContent = '';
+  err.style.display = "none";
+}
+            
+            if (!email.endsWith('@gmail.com')) {
+  const err = document.getElementById('email-error');
+  err.textContent = 'Must be a @gmail.com email';
+  err.style.display = "block";
+  valid = false;
+} else {
+  const err = document.getElementById('email-error');
+  err.textContent = '';
+  err.style.display = "none";
+}
+            if (!/^\d{7}$/.test(postal)) {
+  const err = document.getElementById('postal-error');
+  err.textContent = 'Must be 7 digits';
+  err.style.display = "block";
+  valid = false;
+} else {
+  const err = document.getElementById('postal-error');
+  err.textContent = '';
+  err.style.display = "none";
+}
+
+            if (!validCard || !validDate || !validCVV || !valid) return;
+            
+            if (cartItems.length === 0) {
+                alert("Your cart is empty!");
+                return;
+            }
 
             const btn = document.querySelector('.submit-btn');
             btn.textContent = "Processing...";
 
-            fetch('/api/checkout', {method: 'POST'}).then(r => r.json()).then(data => {
-                alert("Order Completed");
-                window.location.href="/";
-            })
+            fetch('/api/checkout', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    phone: phone, 
+                    email: email, 
+                    postal: postal,
+                    save_address: document.getElementById('save-addr-chk').checked,
+                    address_name: document.getElementById('save-addr-name').value,
+                    address: document.getElementById('chk-address').value,
+                    save_payment: document.getElementById('save-card-chk').checked,
+                    card_name: document.getElementById('save-card-name').value,
+                    card_number: document.getElementById('creditcard-number').value,
+                    expiry: document.getElementById('date-number').value,
+                    cvv: document.getElementById('cvv-number').value
+                })
+            }).then(r => r.json()).then(data => {
+                if (data.error) {
+                    alert(data.error);
+                    btn.textContent = "Submit Order";
+                } else {
+                    alert("Order Completed! Your Reference is: CP-" + (10000 + parseInt(data.order_id)));
+                    window.location.href="/profile";
+                }
+            }).catch(e => {
+                alert("An error occurred");
+                btn.textContent = "Submit Order";
+            });
         }
     </script>
 

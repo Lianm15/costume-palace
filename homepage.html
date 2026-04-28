@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Costume Palace</title>
-  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 
@@ -35,12 +35,14 @@
   <section class="costumes-section" id="costumes">
     <h2>Our <span>Costumes</span></h2>
     <div style="display:flex; justify-content:center; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
-      <input type="text" id="store-search" placeholder="Search costumes..." oninput="renderStore()"
-        style="padding:10px; border-radius:10px; border:2px solid #e5e7eb; width: 300px; font-family:'Nunito'; outline:none;">
+      <div class="search-wrapper">
+      <input type="text" class="search-card" id="store-search" placeholder="Search costumes..." oninput="renderStore()">
+      </div>
         <div class="select-wrapper">
       <select class="select-card" id="store-sort" onchange="renderStore()"
-        style="padding:10px; border-radius:10px; border:2px solid #e5e7eb; font-family:'Nunito'; outline:none;">
-        <option value="none">Sort By / Filter</option>
+        >
+        <option value="" disabled selected hidden>Sort By / Filter</option>
+        <option value="none">Most Popular</option>
         <option value="price-asc">Price: Low to High</option>
         <option value="price-desc">Price: High to Low</option>
         <option value="abc">Alphabetical</option>
@@ -136,7 +138,7 @@
             </select>
           </div>
           <textarea id="review-content" placeholder="Write your review..."></textarea>
-          <button class="add-btn" onclick="submitReview()">Submit Review</button>
+          <button class="submit-btn" onclick="submitReview()">Submit Review</button>
         </div>
 
         <!-- Shown when not logged in -->
@@ -346,7 +348,10 @@
               <div class="card-desc">${p.description}</div>
               <div class="card-footer" style="align-items: center;">
                 <span class="card-price" style="margin-right:auto;">₪${p.price}</span>
-                <button class="add-btn" onclick="addToCart(${p.id}, this)">Add To Cart</button>
+                <div class="btns" style="display: flex; align-items: center; gap: 5px;">
+                <button class="add-btn" style="background: white; color:#a855f7;  display: flex; align-items: center; justify-content: center; width:60px;" onclick="openProductModal(${p.id})">✍️ Review</button>
+                <button class="add-btn" style=" width:80px; height: 50px;" onclick="addToCart(${p.id}, this)">Add To Cart</button>
+                </div>
               </div>
             </div>`;
         grid.appendChild(card);

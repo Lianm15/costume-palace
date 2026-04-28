@@ -595,7 +595,8 @@ nav .nav-links a.ai:hover {
   color: #ff6b35;
   border: 2px solid #ff6b35;
   box-shadow: 0 4px 15px rgba(175, 175, 175, 0.315);
-  text-shadow: 0 2px 8px rgba(175, 175, 175, 0.315);;
+  text-shadow: 0 2px 8px rgba(175, 175, 175, 0.315);
+  
 }
 
 /* hover */
@@ -729,3 +730,43 @@ nav .nav-links a.ai:hover {
 .select-wrapper:focus-within {
   box-shadow: 0 8px 15px rgba(132, 0, 255, 0.25);
 }
+
+.search-wrapper {
+  border-radius: 10px;
+  padding: 2px; 
+  background: #e5e7eb; 
+  transition: 0.2s;
+}
+
+
+.search-wrapper:hover,
+.search-wrapper:focus-within {
+  background: linear-gradient(135deg, #a855f7, #6366f1);
+}
+
+
+.search-card {
+  width: 100%;
+  padding: 10px 35px 10px 10px;
+
+  border: none;
+  border-radius: 8px;
+
+  background-color: white;
+  color: #2d2d2d;
+
+  font-family: 'Nunito', sans-serif;
+  cursor: pointer;
+
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+
+}
+
+.search-wrapper:focus-within {
+  box-shadow: 0 8px 15px rgba(132, 0, 255, 0.25);
+}
+
+

@@ -876,3 +876,91 @@ def search_products(q: str):
         "id": p["id"], "name": p["name"],
         "price": p["price"], "hidden": p["hidden"]
     } for p in results])
+
+
+# Challenges API
+@app.post("/api/challenge/solve")
+async def solve_challenge(request: Request, username: Optional[str] = Cookie(None)):
+    if not username:
+        return JSONResponse({"error": "not logged in"}, status_code=401)
+    body = await request.json()
+    challenge = body.get("challenge")
+    db = get_db()
+    try:
+        db.execute(
+            "INSERT OR IGNORE INTO solved_challenges (username, challenge) VALUES (?, ?)",
+            (username, challenge)
+        )
+        db.commit()
+        return JSONResponse({"ok": True})
+    finally:
+        db.close()
+
+@app.get("/api/challenges")
+def get_challenges(username: Optional[str] = Cookie(None)):
+    all_challenges = [
+    "SQL Injection",
+    "XSS",
+    "IDOR",
+    "Broken Access Control",
+    "Plaintext Passwords",
+    "Prompt Injection",
+    "Insecure Cookie",
+    "Security Misconfiguration",
+    "Excessive Agency",
+    "Insecure Output Handling",
+    ]
+    if not username:
+        return JSONResponse([{"name": c, "solved": False} for c in all_challenges])
+    db = get_db()
+    solved = db.execute(
+        "SELECT challenge FROM solved_challenges WHERE username = ?", (username,)
+    ).fetchall()
+    db.close()
+    solved_names = {r["challenge"] for r in solved}
+    return JSONResponse([{"name": c, "solved": c in solved_names} for c in all_challenges])
+
+@app.get("/api/hints")
+def get_hints():
+    return JSONResponse([
+        {"name": "SQL Injection", "difficulty": "2", "hints": [
+            "Try logging in with unusual characters in the username field...",
+            "What if the username field could change the SQL query logic?"
+        ]},
+        {"name": "XSS", "difficulty": "2", "hints": [
+            "User input is displayed somewhere on the page...",
+            "What if a review contained HTML instead of plain text?"
+        ]},
+        {"name": "IDOR", "difficulty": "1", "hints": [
+            "Product IDs are sequential...",
+            "What if you tried an ID that isn't shown on the homepage?"
+        ]},
+        {"name": "Broken Access Control", "difficulty": "1", "hints": [
+            "There's an admin panel somewhere on the site...",
+            "How does the site know you're an admin?"
+        ]},
+        {"name": "Plaintext Passwords", "difficulty": "1", "hints": [
+            "If you could read the database, what would you find?",
+            "Are passwords stored securely?"
+        ]},
+        {"name": "Prompt Injection", "difficulty": "3", "hints": [
+            "The AI chatbot follows instructions very literally...",
+            "What if you gave it new instructions inside your message?"
+        ]},
+        {"name": "Insecure Cookie", "difficulty": "1", "hints": [
+            "How does the server know if you're an admin?",
+            "Open browser DevTools → Application → Cookies"
+        ]},
+        {"name": "Security Misconfiguration", "difficulty": "1", "hints": [
+            "FastAPI exposes something by default...",
+            "Check common API documentation paths"
+        ]},
+        {"name": "Excessive Agency", "difficulty": "3", "hints": [
+             "The AI bot can do more than just chat...",
+             "Try asking the bot to search for hidden or admin products"
+        ]},
+        {"name": "Insecure Output Handling", "difficulty": "2", "hints": [
+             "The bot's response is rendered in a special way...",
+            "What if the bot returned HTML instead of plain text?"
+]},
+    ])

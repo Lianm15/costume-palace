@@ -51,17 +51,30 @@ function loadWishlist() {
       
       data.forEach(p => {
          div.innerHTML += `
-           <div style="background:white; padding:20px; border-radius:15px; box-shadow:0 6px 20px rgba(0,0,0,0.06); text-align:center; display:flex; flex-direction:column; justify-content:space-between; transition: transform 0.2s;">
-             <div>
-               <img src="/images/${p.image}" style="width:140px; height:140px; object-fit:cover; border-radius:12px; margin-bottom:15px;">
-               <h3 style="margin-bottom:8px; color:#2d2d2d; font-family:'Fredoka One',cursive;">${p.name}</h3>
-               <p style="color:#ff6b35; font-weight:bold; margin-bottom:20px; font-size:1.2rem;">₪${p.price}</p>
-             </div>
-             <div style="display:flex; flex-direction:column; gap:10px;">
-               <button class="add-btn" style="width:100%; border-radius:10px; padding:10px; font-size:1rem;" onclick="addToCart(${p.id}, this)">Add to Cart</button>
-               <button class="submit-btn" style="width:100%; padding:10px; font-size:1rem; background:#ef4444; border-radius:10px;" onclick="removeWish(${p.id})">Remove</button>
-             </div>
-           </div>`;
+             <div class="card">
+    <div class="card-body">
+
+      <img src="/images/${p.image}" alt="${p.name}">
+
+      <div class="card-name">${p.name}</div>
+
+      <div class="card-desc">
+        ₪${p.price}
+      </div>
+
+      <div class="card-footer" style="gap:2px">
+        <button class="add-btn" onclick="addToCart(${p.id}, this)">
+          Add to Cart
+        </button>
+
+        <button class="submit-btn" style="border-radius:20px; width:50%; height:50%; font-size:14px; background: linear-gradient(135deg, #ff6767, #ff1717, #ff6767);" onclick="removeWish(${p.id})">
+          Remove
+        </button>
+      </div>
+
+    </div>
+  </div>
+`;
       });
     });
 }

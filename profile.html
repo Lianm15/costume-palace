@@ -61,7 +61,7 @@
   </style>
 
   <div class="profile-container" style="max-width:800px; margin:30px auto; padding: 0 15px;">
-    <h1 style="text-align:center; font-family:'Fredoka One', cursive; font-size:2.5rem; color:#4b5563;">My Profile</h1>
+    <h1 style="text-align:center; font-family: 'Fredoka One', cursive; font-size:2.5rem; color:#4b5563; font-weight: 100;">My Profile</h1>
 
     <div
       style="background:#fff; border-radius:15px; box-shadow:0 4px 15px rgba(0,0,0,0.05); overflow:hidden; margin-top:20px;">
@@ -79,7 +79,7 @@
 
         <!-- Tab 1: Details -->
         <div id="tab-details" class="tab-content" style="display:block;">
-          <h2 style="font-family:'Fredoka One'; color:#4b5563; margin-top:0;">Account Settings</h2>
+          <h2 style="color:#ff6b35; margin-top:0; font-weight: 700;">Account Settings</h2>
           <div style="margin-top:1rem; text-align:left;">
             <div style="margin-bottom:15px;">
               <label style="display:block; font-weight:bold; color:#374151; margin-bottom:5px;">Full Name</label>
@@ -98,7 +98,7 @@
                 style="width:100%; border:1px solid #d1d5db; border-radius:8px; padding:10px;" placeholder="05XXXXXXXX">
             </div>
             <button class="submit-btn"
-              style="width:100%; font-size:1.1rem; padding:12px; background:#a855f7; border-radius:10px;"
+               style="width:100%; font-size:1.1rem; padding:12px; border-radius:10px;"
               onclick="saveProfile()">Save Details</button>
             <p id="prof-msg" style="text-align:center; margin-top:10px; font-weight:bold;"></p>
           </div>
@@ -106,7 +106,7 @@
 
         <!-- Tab 2: Addresses -->
         <div id="tab-addresses" class="tab-content" style="display:none;">
-          <h2 style="font-family:'Fredoka One'; color:#4b5563; margin-top:0;">Manage Addresses</h2>
+          <h2 style=color:#ff6b35; margin-top:0; font-weight: 700;">Manage Addresses</h2>
           <div id="addresses" style="width:100%; margin-top:1rem; display:flex; flex-direction:column; gap:10px;"></div>
 
           <div
@@ -129,7 +129,7 @@
 
         <!-- Tab 3: Payments -->
         <div id="tab-payments" class="tab-content" style="display:none;">
-          <h2 style="font-family:'Fredoka One'; color:#4b5563; margin-top:0;">Saved Payment Methods</h2>
+          <h2 style="color:#ff6b35; margin-top:0; font-weight: 700;">Saved Payment Methods</h2>
           <div id="payments" style="width:100%; margin-top:1rem; display:flex; flex-direction:column; gap:10px;"></div>
 
           <div
@@ -155,7 +155,7 @@
 
         <!-- Tab 4: Orders -->
         <div id="tab-orders" class="tab-content" style="display:none;">
-          <h2 style="font-family:'Fredoka One'; color:#a855f7; margin-top:0;">My Orders</h2>
+          <h2 style="color:#ff6b35; margin-top:0; font-weight: 700;">My Orders</h2>
           <div id="orders" style="width:100%; margin-top:1rem;"></div>
         </div>
 
@@ -163,7 +163,7 @@
     </div>
 
     <div style="text-align: center; padding-top: 1rem; margin-bottom: 30px;">
-      <button class="submit-btn" style="background:#ef4444;" onclick="logout()">Logout</button>
+      <button class="submit-btn logout-btn" onclick="logout()">Logout</button>
     </div>
   </div>
 
@@ -238,12 +238,12 @@
           box.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f3f4f6; padding-bottom:10px; margin-bottom:15px;">
           <div>
-            <h3 style="margin:0; color:#ff6b35; font-family:'Fredoka One',cursive;">Order Ref: CP-${10000 + parseInt(o.id)}</h3>
+             <h3 style="margin:0; color:#a855f7; font-family:'Fredoka One',cursive;">Order Ref: CP-${10000 + parseInt(o.id)}</h3>
             <small style="color:#9ca3af;">${dateStr}</small>
           </div>
           <div style="text-align:right;">
             <span style="background:${statusColor}; color:white; padding:4px 10px; border-radius:15px; font-weight:700; font-size:0.85rem;">${o.status || 'Pending'}</span>
-            <p style="margin:8px 0 0 0; font-weight:700; font-size:1.1rem; color:#2d2d2d;">Total: ₪${o.total}</p>
+            <p style="margin:8px 0 0 0; font-weight:700; font-size:1.1rem; color:#2d2d2d;">Total: ₪${o.total.toFixed(2)}</p>
           </div>
         </div>
         <div id="items-${o.id}" style="display:flex; flex-direction:column; gap:12px;"></div>

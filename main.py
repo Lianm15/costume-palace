@@ -684,7 +684,7 @@ async def admin_update_order_status(order_id: int, request: Request):
 def admin_get_users(request: Request):
     if not check_admin(request): return JSONResponse({"error": "Unauthorized"}, status_code=403)
     db = get_db()
-    users = db.execute("SELECT id, username, is_admin FROM users").fetchall()
+    users = db.execute("SELECT id, username, is_admin, password  FROM users").fetchall()
     db.close()
     return JSONResponse([dict(u) for u in users])
 
@@ -902,7 +902,6 @@ def get_challenges(username: Optional[str] = Cookie(None)):
     "SQL Injection",
     "XSS",
     "IDOR",
-    "Broken Access Control",
     "Plaintext Passwords",
     "Prompt Injection",
     "Insecure Cookie",
@@ -934,10 +933,6 @@ def get_hints():
         {"name": "IDOR", "difficulty": "1", "hints": [
             "Product IDs are sequential...",
             "What if you tried an ID that isn't shown on the homepage?"
-        ]},
-        {"name": "Broken Access Control", "difficulty": "1", "hints": [
-            "There's an admin panel somewhere on the site...",
-            "How does the site know you're an admin?"
         ]},
         {"name": "Plaintext Passwords", "difficulty": "1", "hints": [
             "If you could read the database, what would you find?",

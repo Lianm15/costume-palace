@@ -53,7 +53,7 @@ function loadCart() {
 
         card.innerHTML = `
           <div class="card-body">
-            <img src="/images/${item.image}" alt="${item.name}">
+            <img src="/images/${item.image}" onerror="this.src='/images/placeholder.jpg'" alt="${item.name}">
             
             <div class="card-name">${item.name}</div>
             

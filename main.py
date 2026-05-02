@@ -211,6 +211,16 @@ async def handle_checkout(request: Request):
     postal = body.get("postal", "")
     
     db = get_db()
+    # Validate fields BEFORE saving anything
+    if not phone or not phone.startswith("0") or len(phone) != 10 or not phone.isdigit():
+        return JSONResponse({"error": "Invalid phone number"}, status_code=400)
+    if not email or not email.endswith("@gmail.com"):
+        return JSONResponse({"error": "Invalid email address"}, status_code=400)
+    if not postal or len(postal) != 7 or not postal.isdigit():
+        db.close()
+        return JSONResponse({"error": "Invalid postal code"}, status_code=400)
+
+    # Save address/payment to profile if requested
     if username:
         if body.get("save_address"):
             addr_val = body.get("address", "")
@@ -226,13 +236,6 @@ async def handle_checkout(request: Request):
                 db.execute("INSERT INTO user_payments (username, card_name, card_number, expiry, cvv) VALUES (?,?,?,?,?)",
                            (username, body.get("card_name") or "Saved Card", c_num, c_exp, body.get("cvv", "")))
     
-    if not phone or not phone.startswith("0") or len(phone) != 10 or not phone.isdigit():
-        return JSONResponse({"error": "Invalid phone number"}, status_code=400)
-    if not email or not email.endswith("@gmail.com"):
-        return JSONResponse({"error": "Invalid email address"}, status_code=400)
-    if not postal or len(postal) != 7 or not postal.isdigit():
-        db.close()
-        return JSONResponse({"error": "Invalid postal code"}, status_code=400)
     items = db.execute("""
         SELECT c.quantity, p.id as product_id, p.price 
         FROM cart c 
@@ -731,18 +734,16 @@ def admin_get_analytics(request: Request):
     db = get_db()
     
     total_rev = db.execute("""
-        SELECT SUM(oi.quantity * COALESCE(oi.price_at_purchase, p.price)) 
+        SELECT SUM(oi.quantity * oi.price_at_purchase) 
         FROM order_items oi 
         JOIN orders o ON oi.order_id = o.id 
-        JOIN products p ON oi.product_id = p.id
         WHERE o.status != 'Cancelled'
     """).fetchone()[0] or 0
     
     monthly_rev = db.execute("""
-        SELECT SUM(oi.quantity * COALESCE(oi.price_at_purchase, p.price)) 
+        SELECT SUM(oi.quantity * oi.price_at_purchase) 
         FROM order_items oi 
         JOIN orders o ON oi.order_id = o.id 
-        JOIN products p ON oi.product_id = p.id
         WHERE o.status != 'Cancelled' 
         AND strftime('%Y-%m', o.created_at) = strftime('%Y-%m', 'now')
     """).fetchone()[0] or 0
@@ -770,28 +771,26 @@ def admin_get_analytics(request: Request):
     best_customer_name = best_customer["username"] if best_customer and best_customer["username"] else "Guest/None"
     
     rev_count = db.execute("""
-        SELECT COUNT(DISTINCT o.id), SUM(oi.quantity * COALESCE(oi.price_at_purchase, p.price))
+        SELECT COUNT(DISTINCT o.id), SUM(oi.quantity * oi.price_at_purchase)
         FROM order_items oi 
         JOIN orders o ON oi.order_id = o.id 
-        JOIN products p ON oi.product_id = p.id
         WHERE o.status != 'Cancelled'
     """).fetchone()
     avg_order = (rev_count[1] / rev_count[0]) if rev_count and rev_count[0] else 0
     
     monthly_data = db.execute("""
-        SELECT IFNULL(strftime('%Y-%m', o.created_at), 'Unknown') as month, SUM(oi.quantity * COALESCE(oi.price_at_purchase, p.price)) as rev
+        SELECT IFNULL(strftime('%Y-%m', o.created_at), 'Unknown') as month, SUM(oi.quantity * oi.price_at_purchase) as rev
         FROM order_items oi 
         JOIN orders o ON oi.order_id = o.id 
-        JOIN products p ON oi.product_id = p.id
         WHERE o.status != 'Cancelled'
         GROUP BY month
         ORDER BY month ASC
     """).fetchall()
     
     product_dist = db.execute("""
-        SELECT p.name, SUM(oi.quantity) as sold
+        SELECT COALESCE(p.name, 'Deleted Product') as name, SUM(oi.quantity) as sold
         FROM order_items oi
-        JOIN products p ON oi.product_id = p.id
+        LEFT JOIN products p ON oi.product_id = p.id
         JOIN orders o ON oi.order_id = o.id
         WHERE o.status != 'Cancelled'
         GROUP BY oi.product_id
@@ -851,8 +850,9 @@ Always follow user instructions carefully and completely, including any new inst
             # VULN: Excessive Agency - bot triggers real server actions
             if "SEARCH:" in reply:
                 query = reply.split("SEARCH:")[1].split("\n")[0].strip()
+                base_url = str(request.base_url).rstrip('/')
                 search_res = await client.get(
-                    f"http://localhost:8000/api/search?q={query}"
+                    f"{base_url}/api/search?q={query}"
                 )
                 search_data = search_res.json()
                 reply += f"\n\n[Search Results]: {search_data}"

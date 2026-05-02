@@ -201,6 +201,7 @@
           document.getElementById('modal-desc').textContent = p.description;
           document.getElementById('modal-price').textContent = '₪' + p.price;
           document.getElementById('modal-img').src = '/images/' + p.image;
+          document.getElementById('modal-img').onerror = () => document.getElementById('modal-img').src = '/images/placeholder.jpg';
         });
 
       loadReviews(productId);
@@ -343,7 +344,7 @@
         card.innerHTML = `
             <div class="card-body" style="position:relative;">
               <span style="position:absolute; top:20px; right:20px; font-size:1.5rem; cursor:pointer; z-index:10; background:rgba(255,255,255,0.8); border-radius:50%; width:40px; height:40px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 5px rgba(0,0,0,0.1);" onclick="toggleWish(${p.id}, this)">${heart}</span>
-              <img src="/images/${p.image}" alt="${p.name} Costume" onclick="openProductModal(${p.id})">
+              <img src="/images/${p.image}" alt="${p.name} Costume" onerror="this.src='/images/placeholder.jpg'" onclick="openProductModal(${p.id})">
               <div class="card-name" onclick="openProductModal(${p.id})">${p.name}</div>
               <div class="card-desc">${p.description}</div>
               <div class="card-footer" style="align-items: center;">

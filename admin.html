@@ -475,7 +475,7 @@
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${p.id}</td>
-          <td><img src="/images/${p.image}" style="width:40px; height:40px; border-radius:5px; object-fit:cover;"></td>
+          <td><img src="/images/${p.image}" onerror="this.src='/images/placeholder.jpg'" style="width:40px; height:40px; border-radius:5px; object-fit:cover;"></td>
           <td>${p.name}</td>
           <td>₪${p.price}</td>
           <td>${p.hidden ? '<span style="color:red">Hidden</span>' : '<span style="color:green">Visible</span>'}</td>
@@ -602,7 +602,7 @@
       document.getElementById('order-modal-title').innerText = 'Order Ref: CP-' + (10000 + parseInt(o.id));
       let itemsHtml = o.items.map(i => {
         return `<div style="display:flex; gap:10px; border-bottom:1px solid #eee; padding-bottom:10px; margin-bottom:10px;">
-           <img src="/images/${i.image}" style="width:50px; height:50px; border-radius:5px; object-fit:cover;">
+           <img src="/images/${i.image}" onerror="this.src='/images/placeholder.jpg'" style="width:50px; height:50px; border-radius:5px; object-fit:cover;">
            <div>
              <strong>${i.name}</strong><br>
              Qty: ${i.quantity} | Unit Price: ₪${i.price_at_purchase !== undefined && i.price_at_purchase !== null ? i.price_at_purchase : i.price}
@@ -613,7 +613,7 @@
       document.getElementById('order-modal-content').innerHTML = `
          <p><strong>User:</strong> ${o.username}</p>
          <p><strong>Status:</strong> ${o.status}</p>
-         <p><strong>Date:</strong> ${o.created_at ? new Date(o.created_at + 'Z').toLocaleString() : 'N/A'}</p>
+         <p><strong>Date:</strong> ${o.created_at ? new Date(o.created_at.replace(' ', 'T') + 'Z').toLocaleString() : 'N/A'}</p>
          <p><strong>Total:</strong> ₪${o.total}</p>
          <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
          <h4>Items:</h4>

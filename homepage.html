@@ -61,7 +61,7 @@
       <h2>Royal Entry</h2>
       <p class="auth-sub">Welcome back your highness!</p>
 
-      <form method="POST" action="/login">
+      <form id="loginForm" onsubmit="handleLogin(event)">
         <div class="form-group">
           <label>Username</label>
           <input type="text" name="username" placeholder="Enter username" required>
@@ -160,6 +160,85 @@
 
     let currentUser = getCookie('username');
     let isAdmin = getCookie('is_admin') === '1';
+    if (isAdmin) {
+    markSolved("Insecure Cookie");
+}
+    
+    // --- SIMPLE CHALLENGE TRACKING ---
+    function markSolved(id) {
+    console.log("markSolved called with:", id);
+
+    let solved = JSON.parse(localStorage.getItem("solved") || "[]");
+    console.log("already solved:", solved);
+
+    // 🔥 גם אם כבר נפתר → עדיין תפעילי UI
+    if (!solved.includes(id)) {
+        solved.push(id);
+        localStorage.setItem("solved", JSON.stringify(solved));
+    }
+
+    // 🎉 תמיד תראי אפקט
+    if (window.confetti) {
+        confetti({
+            particleCount: 120,
+            spread: 70,
+            origin: { y: 0.6 }
+        });
+    }
+
+    // 🔔 toast
+    const toast = document.getElementById('toast');
+    if (toast) {
+        toast.textContent = 'Challenge Solved: ' + id;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+drawerLoaded = false;
+
+if (typeof loadDrawer === "function") {
+    loadDrawer();
+}
+}
+
+// 🔥 detect challenge from direct page load (like /docs-check)
+window.addEventListener('load', () => {
+    try {
+        const text = document.body.innerText;
+        const data = JSON.parse(text);
+
+        if (data && data.challenge_solved) {
+            console.log("PAGE LOAD DETECTED:", data.challenge_solved);
+            markSolved(data.challenge_solved);
+        }
+        
+    } catch (e) {
+        // not JSON page → ignore
+    }
+});
+
+const originalFetch = window.fetch;
+
+window.fetch = async function(...args) {
+    const response = await originalFetch.apply(this, args);
+
+    try {
+        // ❗ רק אם זה JSON תקין ו־200
+        if (response.headers.get("content-type")?.includes("application/json")) {
+            const clone = response.clone();
+            const data = await clone.json();
+
+            if (data && data.challenge_solved) {
+                console.log("SOLVED DETECTED:", data.challenge_solved);
+                markSolved(data.challenge_solved);
+            }
+        }
+    } catch (e) {
+        // שקט
+    }
+
+    return response;
+};
+    // ---------------------------------
 
     if (currentUser) {
       const loginBtn = document.querySelector('.nav-links .login');
@@ -179,6 +258,21 @@
     function openRegister() { document.getElementById('registerModal').classList.add('active'); document.getElementById('loginModal').classList.remove('active'); }
     function closeModal() { document.getElementById('loginModal').classList.remove('active'); document.getElementById('registerModal').classList.remove('active'); }
 
+    async function handleLogin(e) {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const res = await fetch('/login', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (data.error) {
+        alert(data.error);
+      } else {
+        setTimeout(() => {
+          if (data.is_admin === 1) window.location.href = '/admin';
+          else window.location.href = '/profile';
+        }, 1000); // give 1 sec for confetti to pop before redirecting!
+      }
+    }
+
     document.addEventListener('click', function (e) {
       if (e.target.classList.contains('modal-overlay')) { closeModal(); closeProductModal(); }
     });
@@ -186,6 +280,7 @@
     // Product modal
     let currentProductId = null;
     function openProductModal(productId) {
+      history.pushState(null, "", `?product=${productId}`);
       currentProductId = productId;
       document.getElementById('productModal').classList.add('active');
       document.getElementById('modal-name').textContent = 'Loading...';
@@ -215,7 +310,20 @@
       }
     }
 
-    function closeProductModal() { document.getElementById('productModal').classList.remove('active'); }
+    function closeProductModal() {
+      document.getElementById('productModal').classList.remove('active');
+      history.pushState(null, "", "/");
+    }
+
+    const params = new URLSearchParams(window.location.search);
+const solved = params.get("solved");
+
+if (solved) {
+    markSolved(solved);
+
+    // מנקה את ה-URL שלא יפעיל שוב ברענון
+    window.history.replaceState({}, document.title, "/");
+}
 
     // Reviews
     function loadReviews(productId) {
@@ -394,43 +502,51 @@
     }
 
     function loadDrawer() {
-      Promise.all([
-        fetch('/api/hints').then(r => r.json()),
-        fetch('/api/challenges').then(r => r.json())
-      ]).then(([hints, challenges]) => {
-        window._hints = hints;
-        const solvedSet = new Set(challenges.filter(c => c.solved).map(c => c.name));
-        const solvedCount = solvedSet.size;
-        const total = hints.length;
-        const pct = total > 0 ? (solvedCount / total) * 100 : 0;
+  fetch('/api/hints').then(r => r.json()).then(hints => {
 
-        document.getElementById('drawer-progress').style.width = pct + '%';
-        document.getElementById('drawer-progress-label').textContent =
-          currentUser ? `${solvedCount} / ${total} solved` : `${total} challenges — log in to track progress`;
-        document.getElementById('challenges-badge').textContent = solvedCount + '/' + total;
+    window._hints = hints;
 
-        const container = document.getElementById('drawer-challenges');
-        container.innerHTML = '';
+    // 🔥 לוקחים מ-localStorage
+    let solved = JSON.parse(localStorage.getItem("solved") || "[]");
+    const solvedSet = new Set(solved);
 
-        hints.forEach((h, i) => {
-          hintState[i] = 0;
-          const solved = solvedSet.has(h.name);
-          const card = document.createElement('div');
-          card.className = 'challenge-card' + (solved ? ' solved' : '');
-          card.innerHTML = `
+    const solvedCount = solvedSet.size;
+    const total = hints.length;
+    const pct = total > 0 ? (solvedCount / total) * 100 : 0;
+
+    document.getElementById('drawer-progress').style.width = pct + '%';
+    document.getElementById('drawer-progress-label').textContent =
+      `${solvedCount} / ${total} solved`;
+
+    document.getElementById('challenges-badge').textContent =
+      solvedCount + '/' + total;
+
+    const container = document.getElementById('drawer-challenges');
+    container.innerHTML = '';
+
+    hints.forEach((h, i) => {
+      hintState[i] = 0;
+      const solvedChallenge = solvedSet.has(h.name);
+
+      const card = document.createElement('div');
+      card.className = 'challenge-card' + (solvedChallenge ? ' solved' : '');
+
+      card.innerHTML = `
         <div class="challenge-card-top">
           <span class="challenge-name">${h.name}</span>
           <div class="challenge-meta">
-            ${solved ? '<span class="solved-badge">SOLVED</span>' : ''}
+            ${solvedChallenge ? '<span class="solved-badge">SOLVED</span>' : ''}
           </div>
         </div>
         <button class="hint-btn" id="dhint-btn-${i}" onclick="revealHint(${i})">Show Hint</button>
         <div class="hints-list" id="dhints-${i}"></div>
       `;
-          container.appendChild(card);
-        });
-      });
-    }
+
+      container.appendChild(card);
+    });
+
+  });
+}
 
     function revealHint(i) {
       const h = window._hints[i];
@@ -449,22 +565,17 @@
     }
 
     function solveChallenge(name) {
-      fetch('/api/challenge/solve', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ challenge: name })
-      }).then(r => r.json()).then(data => {
-        if (data.ok) {
-          confetti({ particleCount: 180, spread: 80, origin: { y: 0.6 } });
-          const toast = document.getElementById('toast');
-          toast.textContent = 'Challenge Solved: ' + name;
-          toast.classList.add('show');
-          setTimeout(() => toast.classList.remove('show'), 3500);
-          drawerLoaded = false;
-          loadDrawer();
-        }
-      });
-    }
+  markSolved(name);
+}
+
+window.addEventListener("load", () => {
+  const params = new URLSearchParams(window.location.search);
+  const productId = params.get("product");
+
+  if (productId) {
+    openProductModal(productId);
+  }
+});
 
   </script>
 
@@ -543,6 +654,8 @@
       return div;
     }
   </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
 </body>
 

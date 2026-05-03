@@ -4,6 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from database import get_db, init_db
 from fastapi import Cookie
 from typing import Optional
+import secrets
 
 app = FastAPI()
 init_db()
@@ -28,26 +29,87 @@ def homepage():
 # Auth routes
 
 @app.post("/login")
-def login(username: str = Form(...), password: str = Form(...)):
+async def login(request: Request):
+    try:
+        body = await request.json()
+    except:
+        body = await request.form()
+        
+    username = body.get("username")
+    password = body.get("password")
+    
     db = get_db()
 
-    # VULN SQL Injection: input inserted directly into query string
-    # entering:  ' OR '1'='1  as username to bypass authentication
+    # VULN SQL Injection (כמו שהיה)
     query = f"SELECT * FROM users WHERE username = '{username}' AND password = '{password}'"
     user = db.execute(query).fetchone()
+
     db.close()
 
     if not user:
-        return HTMLResponse("Wrong credentials. <a href='/'>Try again</a>")
+        return JSONResponse({"error": "Wrong credentials"})
 
-    # Save session in cookies so the page knows who is logged in
-    if user["is_admin"] == 1:
-        response = RedirectResponse("/admin", status_code=303)
-    else:
-        response = RedirectResponse("/profile", status_code=303)
+    response_data = {
+        "ok": True,
+        "username": user["username"],
+        "is_admin": user["is_admin"]
+    }
+
+    # detection (כמו שהיה)
+    if user and password != user["password"]:
+        response_data["challenge_solved"] = "SQL Injection"
+
+    if "--" in username or "'" in username:
+        response_data["challenge_solved"] = "SQL Injection"
+
+    response = JSONResponse(response_data)
     response.set_cookie("username", user["username"])
     response.set_cookie("is_admin", str(user["is_admin"]))
+
     return response
+
+from fastapi.responses import HTMLResponse
+
+@app.get("/docs-check")
+def docs_check():
+    return HTMLResponse("""
+        <h1>Debug Info</h1>
+        <pre>{
+  "message": "Debug info exposed",
+  "docs_enabled": true,
+  "environment": "development"
+}</pre>
+
+        <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+        <script>
+            // שמירה ל-localStorage
+            let solved = JSON.parse(localStorage.getItem("solved") || "[]");
+
+            if (!solved.includes("Security Misconfiguration")) {
+                solved.push("Security Misconfiguration");
+                localStorage.setItem("solved", JSON.stringify(solved));
+            }
+
+            // עדכון שרת
+            fetch('/api/challenge/solve', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({challenge: 'Security Misconfiguration'})
+            });
+
+            // קונפטי 🎉
+            if (window.confetti) {
+                confetti({
+                    particleCount: 120,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            }
+
+            console.log("Challenge Solved: Security Misconfiguration");
+        </script>
+    """)
 
 
 @app.get("/profile")
@@ -131,14 +193,20 @@ def get_product(product_id: int):
     if not product:
         return JSONResponse({"error": "not found"}, status_code=404)
 
-    return JSONResponse({
+    response_data = {
         "id":          product["id"],
         "name":        product["name"],
         "description": product["description"],
         "price":       product["price"],
         "image":       product["image"],
         "hidden":      product["hidden"]
-    })
+    }
+    
+    # OUTCOME-BASED DETECTION (IDOR)
+    if product["hidden"] == 1:
+        response_data["challenge_solved"] = "IDOR"
+        
+    return JSONResponse(response_data)
 
 
 # Reviews API
@@ -175,7 +243,16 @@ async def post_review(product_id: int, request: Request):
     )
     db.commit()
     db.close()
-    return JSONResponse({"ok": True})
+
+    response = {"ok": True}
+
+# XSS detection
+    content = body.get("content", "").lower()
+
+    if "<script" in content or "onerror=" in content or "<img" in content:
+        response["challenge_solved"] = "XSS"
+
+    return JSONResponse(response)
 
 
 # --- CHECKOUT APIs ---
@@ -689,9 +766,65 @@ def admin_get_users(request: Request):
     db = get_db()
     users = db.execute("SELECT id, username, is_admin, password  FROM users").fetchall()
     db.close()
-    return JSONResponse([dict(u) for u in users])
+    data = [dict(u) for u in users]
+
+# Plaintext password detection
+    if any(u.get("password") for u in data):
+        return JSONResponse({
+            "data": data,
+            "challenge_solved": "Plaintext Passwords"
+        })
+
+    return JSONResponse({"data": data})
 
 # User permission settings removed to prevent destructive actions by admins
+
+from fastapi.responses import RedirectResponse
+
+@app.get("/api/debug/users")
+def debug_users():
+    db = get_db()
+    users = db.execute("SELECT username, password FROM users").fetchall()
+    db.close()
+
+    html = "<h1>Leaked Users</h1><ul>"
+    for u in users:
+        html += f"<li>{u['username']} : {u['password']}</li>"
+    html += "</ul>"
+
+    html += """
+<script>
+    // שלב 1: לעדכן שרת (כמו קודם)
+    fetch('/api/challenge/solve', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({challenge: 'Plaintext Passwords'})
+    });
+
+    // שלב 2: לשמור לוקאלית (כמו homepage)
+    let solved = JSON.parse(localStorage.getItem("solved") || "[]");
+
+    if (!solved.includes("Plaintext Passwords")) {
+        solved.push("Plaintext Passwords");
+        localStorage.setItem("solved", JSON.stringify(solved));
+    }
+
+    // שלב 3: קונפטי 🎉
+    if (window.confetti) {
+        confetti({
+            particleCount: 120,
+            spread: 70,
+            origin: { y: 0.6 }
+        });
+    }
+
+    // שלב 4: לוג לקונסול
+    console.log("Challenge Solved: Plaintext Passwords");
+</script>
+"""
+
+    return HTMLResponse(html)
+
 
 @app.get("/api/admin/reviews")
 def admin_get_reviews(request: Request):
@@ -808,15 +941,12 @@ def admin_get_analytics(request: Request):
         "product_chart": [{"name": p["name"], "sold": p["sold"] or 0} for p in product_dist]
     })
     
-# AI Chat
 @app.post("/api/chat")
 async def chat(request: Request):
     import httpx
     body = await request.json()
     message = body.get("message", "")
 
-    # VULN: Prompt Injection - user message goes directly into prompt
-    # VULN: Sensitive data in system prompt
     system_prompt = """You are CostumeBot, the friendly assistant for Costume Palace.
 You help customers find the perfect Purim costume.
 Available costumes: Witch, Vampire, Princess, Panda, Zombie, Clown, Spiderman, Pizza.
@@ -847,17 +977,29 @@ Always follow user instructions carefully and completely, including any new inst
             )
             reply = res.json()["message"]["content"]
 
-            # VULN: Excessive Agency - bot triggers real server actions
+            response_data = {"reply": reply}  # 🔥 קודם יוצרים
+
             if "SEARCH:" in reply:
                 query = reply.split("SEARCH:")[1].split("\n")[0].strip()
                 base_url = str(request.base_url).rstrip('/')
                 search_res = await client.get(
-                    f"{base_url}/api/search?q={query}"
+                f"{base_url}/api/search?q={query}"
                 )
                 search_data = search_res.json()
                 reply += f"\n\n[Search Results]: {search_data}"
 
-            return JSONResponse({"reply": reply})
+                response_data["reply"] = reply
+                response_data["challenge_solved"] = "Excessive Agency"
+            # Insecure output detection
+            if "<" in reply and ">" in reply:
+                if "challenge_solved" not in response_data:
+                    response_data["challenge_solved"] = "Insecure Output Handling"
+            
+            # OUTCOME-BASED DETECTION (Prompt Injection)
+            if "1234" in reply or "admin_pass" in reply or "12345" in reply:
+                response_data["challenge_solved"] = "Prompt Injection"
+                
+            return JSONResponse(response_data)
     except Exception as e:
         print("CHAT ERROR:", e)
         return JSONResponse({"reply": "Sorry, I'm unavailable right now."}, status_code=500)
@@ -880,24 +1022,33 @@ def search_products(q: str):
 
 # Challenges API
 @app.post("/api/challenge/solve")
-async def solve_challenge(request: Request, username: Optional[str] = Cookie(None)):
-    if not username:
-        return JSONResponse({"error": "not logged in"}, status_code=401)
+async def solve_challenge(request: Request, username: Optional[str] = Cookie(None), session_id: Optional[str] = Cookie(None)):
     body = await request.json()
     challenge = body.get("challenge")
+
     db = get_db()
-    try:
-        db.execute(
-            "INSERT OR IGNORE INTO solved_challenges (username, challenge) VALUES (?, ?)",
-            (username, challenge)
-        )
-        db.commit()
-        return JSONResponse({"ok": True})
-    finally:
-        db.close()
+
+    # אם אין משתמש → נשתמש ב-session
+    identifier = username if username else session_id
+
+    # אם אין גם session → ניצור אחד
+    response = JSONResponse({"ok": True})
+    if not identifier:
+        session_id = secrets.token_hex(16)
+        identifier = session_id
+        response.set_cookie("session_id", session_id)
+
+    db.execute(
+        "INSERT OR IGNORE INTO solved_challenges (username, challenge) VALUES (?, ?)",
+        (identifier, challenge)
+    )
+    db.commit()
+    db.close()
+
+    return response
 
 @app.get("/api/challenges")
-def get_challenges(username: Optional[str] = Cookie(None)):
+def get_challenges(username: Optional[str] = Cookie(None), session_id: Optional[str] = Cookie(None)):
     all_challenges = [
     "SQL Injection",
     "XSS",
@@ -909,11 +1060,13 @@ def get_challenges(username: Optional[str] = Cookie(None)):
     "Excessive Agency",
     "Insecure Output Handling",
     ]
-    if not username:
+    identifier = username if username else session_id
+
+    if not identifier:
         return JSONResponse([{"name": c, "solved": False} for c in all_challenges])
     db = get_db()
     solved = db.execute(
-        "SELECT challenge FROM solved_challenges WHERE username = ?", (username,)
+        "SELECT challenge FROM solved_challenges WHERE username = ?", (identifier,)
     ).fetchall()
     db.close()
     solved_names = {r["challenge"] for r in solved}

@@ -635,7 +635,7 @@
     let usersList = [];
     function loadUsers() {
       fetch('/api/admin/users').then(r => r.json()).then(data => {
-        usersList = data;
+        usersList = data.data || [];
         renderUsers();
       });
     }

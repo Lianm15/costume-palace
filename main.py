@@ -493,8 +493,48 @@ async def update_user_profile(request: Request):
     ))
     db.commit()
     db.close()
-    
+
     return JSONResponse({"ok": True})
+
+
+@app.put("/api/profile")
+async def update_user_profile_v2(request: Request):
+    username = request.cookies.get("username")
+    if not username:
+        return JSONResponse({"error": "Unauthorized"}, status_code=403)
+
+    body = await request.json()
+    if not body:
+        return JSONResponse({"error": "No fields provided"}, status_code=400)
+
+    # VULN: Mass Assignment — builds UPDATE dynamically from request body.
+    # Only 'username' and 'id' are excluded; sensitive fields like 'is_admin'
+    # and 'password' are not blocked, so callers can overwrite them.
+    updates = {
+        k: v for k, v in body.items()
+        if k not in ("username", "id")
+        and re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', k)
+    }
+
+    if not updates:
+        return JSONResponse({"error": "No valid fields provided"}, status_code=400)
+
+    db = get_db()
+    current = db.execute("SELECT is_admin FROM users WHERE username=?", (username,)).fetchone()
+    was_admin = current["is_admin"] == 1 if current else False
+
+    set_clause = ", ".join(f"{k} = ?" for k in updates)
+    values = list(updates.values()) + [username]
+    db.execute(f"UPDATE users SET {set_clause} WHERE username = ?", values)
+    db.commit()
+    db.close()
+
+    response_data = {"ok": True, "updated": list(updates.keys())}
+
+    if not was_admin and int(updates.get("is_admin", 0)) == 1:
+        response_data["challenge_solved"] = "Mass Assignment"
+
+    return JSONResponse(response_data)
 
 
 # --- PROFILE MULTI-ENTRY APIs ---
@@ -1246,6 +1286,7 @@ def get_challenges(username: Optional[str] = Cookie(None), session_id: Optional[
     "Security Misconfiguration",
     "Excessive Agency",
     "Insecure Output Handling",
+    "Mass Assignment",
     ]
     identifier = username if username else session_id
 
@@ -1297,5 +1338,9 @@ def get_hints():
         {"name": "Insecure Output Handling", "difficulty": "2", "hints": [
              "The bot's response is rendered in a special way...",
             "What if the bot returned HTML instead of plain text?"
-]},
+        ]},
+        {"name": "Mass Assignment", "difficulty": "2", "hints": [
+            "The API documentation at /docs exposes all available endpoints — some may not be visible in the normal UI.",
+            "Profile update endpoints sometimes accept more fields than the form sends. What happens if you include 'is_admin' in the JSON body of a PUT request?"
+        ]},
     ])

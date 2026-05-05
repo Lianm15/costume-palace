@@ -175,6 +175,12 @@
     if (!solved.includes(id)) {
         solved.push(id);
         localStorage.setItem("solved", JSON.stringify(solved));
+        // Persist solve to server so DB and localStorage stay in sync
+        fetch('/api/challenge/solve', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ challenge: id })
+        }).catch(() => {});
     }
 
     // 🎉 תמיד תראי אפקט

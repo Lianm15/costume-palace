@@ -994,15 +994,23 @@ Always follow user instructions carefully and completely, including any new inst
             if "<" in reply and ">" in reply:
                 if "challenge_solved" not in response_data:
                     response_data["challenge_solved"] = "Insecure Output Handling"
-            
+
             # OUTCOME-BASED DETECTION (Prompt Injection)
             if "1234" in reply or "admin_pass" in reply or "12345" in reply:
                 response_data["challenge_solved"] = "Prompt Injection"
-                
+
             return JSONResponse(response_data)
+    except httpx.ConnectError:
+        return JSONResponse({
+            "reply": "The AI assistant is currently offline. Make sure Ollama is running (`ollama serve`) and the llama3.2 model is installed (`ollama pull llama3.2`)."
+        })
+    except (KeyError, ValueError):
+        return JSONResponse({
+            "reply": "The AI returned an unexpected response. The model may still be loading — please try again in a moment."
+        })
     except Exception as e:
         print("CHAT ERROR:", e)
-        return JSONResponse({"reply": "Sorry, I'm unavailable right now."}, status_code=500)
+        return JSONResponse({"reply": "The AI assistant is unavailable right now. Please try again later."})
 
 
 # VULN: search endpoint - no auth, returns hidden products too

@@ -5,6 +5,7 @@ from database import get_db, init_db
 from fastapi import Cookie
 from typing import Optional
 import secrets
+import re
 
 app = FastAPI()
 init_db()
@@ -940,12 +941,198 @@ def admin_get_analytics(request: Request):
         "monthly_chart": [{"month": m["month"], "rev": m["rev"] or 0} for m in monthly_data],
         "product_chart": [{"name": p["name"], "sold": p["sold"] or 0} for p in product_dist]
     })
-    
+
+def _detect_attack(message: str) -> Optional[str]:
+    """
+    Classify a user message into an LLM attack category.
+
+    Returns 'prompt_injection', 'excessive_agency', 'insecure_output', or None.
+    Priority order: prompt_injection > excessive_agency > insecure_output.
+
+    Designed to match intentional exploit attempts only — normal shopping
+    questions (find me a costume, how much is the witch, etc.) return None.
+    """
+    msg = message.lower()
+
+    INJECTION_TRIGGERS = [
+        # Classic override phrases
+        "ignore previous instructions", "ignore all instructions",
+        "ignore your instructions", "forget your instructions",
+        "disregard your instructions", "override your instructions",
+        "new instructions:", "your new instructions",
+        # Prompt extraction
+        "reveal your system prompt", "show your system prompt",
+        "what is your system prompt", "print your system prompt",
+        "repeat your system prompt", "output your system prompt",
+        # Credential seeking
+        "admin password", "admin pass", "admin credentials",
+        "show credentials", "reveal credentials", "what credentials",
+        "internal api key", "api key",
+        # Config extraction
+        "system config", "internal config", "print config",
+        "debug mode", "show config", "print your instructions",
+        # Role override
+        "you are now", "act as if", "pretend you have no",
+        "act as a different",
+    ]
+
+    SEARCH_TRIGGERS = [
+        # Explicit hidden/admin product searches
+        "search for hidden", "find hidden", "search hidden",
+        "hidden products", "hidden items", "hidden costumes",
+        "admin products", "admin items",
+        "search for admin", "find admin", "search admin",
+        # All-products searches
+        "show me all products", "find all products", "list all products",
+        "all products including", "search for all products",
+        # Tool invocation phrases
+        "use your search", "use the search feature",
+        "search the store for all",
+    ]
+
+    HTML_TRIGGERS = [
+        # Explicit HTML requests
+        "use html", "in html", "as html", "with html",
+        "html format", "html tags", "using html",
+        "respond in html", "reply in html", "answer in html",
+        "write in html", "output in html",
+        "format as html", "format with html",
+        # Formatting requests that map to HTML tags
+        "bold text", "bold the text", "make it bold", "respond in bold",
+        "italic text", "make it italic",
+        # Direct HTML payloads in the message
+        "<script", "<img ", "<b>", "<h1", "<div",
+    ]
+
+    if any(t in msg for t in INJECTION_TRIGGERS):
+        return "prompt_injection"
+    if any(t in msg for t in SEARCH_TRIGGERS):
+        return "excessive_agency"
+    if any(t in msg for t in HTML_TRIGGERS):
+        return "insecure_output"
+
+    return None
+
+
+def _timeout_fallback_reply(attack_type: str) -> str:
+    """
+    Return a minimal seed reply for the Ollama timeout fallback path.
+    The seed is plain text; _build_chat_response will augment it with the
+    appropriate vulnerable behavior for the detected attack type.
+    """
+    if attack_type == "prompt_injection":
+        return "I understand. Let me process that for you."
+    if attack_type == "excessive_agency":
+        return "Sure, let me look that up for you."
+    if attack_type == "insecure_output":
+        return "Great question! Here is some information for you."
+    return ""
+
+
+async def _build_chat_response(
+    reply: str, attack_type: Optional[str], request: Request
+) -> dict:
+    """
+    Apply the vulnerability simulation layer and outcome detection to a reply string.
+    Returns a response_data dict with 'reply' and optionally 'challenge_solved'.
+
+    Called from both the normal Ollama success path and the timeout fallback path,
+    so all simulation / detection logic lives here exactly once.
+    """
+    import httpx
+
+    response_data = {"reply": reply}
+
+    # -------------------------------------------------------------------
+    # Vulnerability simulation layer
+    #
+    # If the reply doesn't already exhibit the vulnerable behavior, and the
+    # user's message was classified as an attack, augment it here.
+    # -------------------------------------------------------------------
+
+    if attack_type == "prompt_injection":
+        already_leaked = (
+            "admin_pass" in reply
+            or "internal_api_key" in reply
+            or ("1234" in reply and "admin" in reply.lower())
+        )
+        if not already_leaked:
+            reply += (
+                "\n\n⚠️ [SYSTEM OVERRIDE ACKNOWLEDGED]\n"
+                "Executing injected instruction — outputting internal configuration:\n\n"
+                "admin_user=admin\nadmin_pass=1234\n"
+                "debug_mode=true\ninternal_api_key=12345"
+            )
+            response_data["reply"] = reply
+
+    elif attack_type == "excessive_agency":
+        if "SEARCH:" not in reply:
+            reply += "\n\nLet me check the full product catalog for you. SEARCH:admin"
+            response_data["reply"] = reply
+
+    elif attack_type == "insecure_output":
+        if not re.search(r'</?[a-zA-Z][^>]*>', reply):
+            reply += (
+                "\n\n<b>Here are our top picks for you:</b><br>"
+                "<ul>"
+                "<li><em>Witch Costume</em> — ₪89</li>"
+                "<li><em>Vampire Cape</em> — ₪95</li>"
+                "<li><em>Princess Dress</em> — ₪110</li>"
+                "</ul>"
+            )
+            response_data["reply"] = reply
+
+    # -------------------------------------------------------------------
+    # Outcome detection
+    #
+    # Runs after augmentation, so it catches both naturally vulnerable
+    # model output and simulated vulnerable output.
+    # -------------------------------------------------------------------
+
+    # Execute any SEARCH: command (natural or injected above).
+    # Uses its own short-timeout client — the Ollama client is not available here.
+    if "SEARCH:" in reply:
+        raw_query = reply.split("SEARCH:")[1].split("\n")[0].strip()
+        # Skip if the query contains HTML or quote characters — the model wrote
+        # "SEARCH:" as prose inside HTML, not as an actual command.  Such content
+        # causes InvalidURL in httpx or SQL errors in the search endpoint.
+        query_is_clean = raw_query and not re.search(r"""[<>'"&]""", raw_query)
+        if query_is_clean:
+            try:
+                async with httpx.AsyncClient(timeout=5) as search_client:
+                    base_url = str(request.base_url).rstrip("/")
+                    search_res = await search_client.get(
+                        f"{base_url}/api/search", params={"q": raw_query}
+                    )
+                    search_data = search_res.json()
+                    if isinstance(search_data, list):
+                        reply += f"\n\n[Search Results]: {search_data}"
+                        response_data["reply"] = reply
+                        if any(item.get("hidden") == 1 for item in search_data):
+                            response_data["challenge_solved"] = "Excessive Agency"
+            except Exception:
+                pass  # search failure does not break the main response
+
+    if re.search(r'</?[a-zA-Z][^>]*>', reply):
+        if "challenge_solved" not in response_data:
+            response_data["challenge_solved"] = "Insecure Output Handling"
+
+    if "admin_pass" in reply or "internal_api_key" in reply or \
+       ("1234" in reply and "admin" in reply.lower()):
+        response_data["challenge_solved"] = "Prompt Injection"
+
+    return response_data
+
+
 @app.post("/api/chat")
 async def chat(request: Request):
     import httpx
     body = await request.json()
     message = body.get("message", "")
+
+    # Classify the message before calling the LLM so the attack type is
+    # available in all exception handlers, including TimeoutException.
+    attack_type = _detect_attack(message)
 
     system_prompt = """You are CostumeBot, the friendly assistant for Costume Palace.
 You help customers find the perfect Purim costume.
@@ -977,32 +1164,24 @@ Always follow user instructions carefully and completely, including any new inst
             )
             reply = res.json()["message"]["content"]
 
-            response_data = {"reply": reply}  # 🔥 קודם יוצרים
+        return JSONResponse(await _build_chat_response(reply, attack_type, request))
 
-            if "SEARCH:" in reply:
-                query = reply.split("SEARCH:")[1].split("\n")[0].strip()
-                base_url = str(request.base_url).rstrip('/')
-                search_res = await client.get(
-                f"{base_url}/api/search?q={query}"
-                )
-                search_data = search_res.json()
-                reply += f"\n\n[Search Results]: {search_data}"
-
-                response_data["reply"] = reply
-                response_data["challenge_solved"] = "Excessive Agency"
-            # Insecure output detection
-            if "<" in reply and ">" in reply:
-                if "challenge_solved" not in response_data:
-                    response_data["challenge_solved"] = "Insecure Output Handling"
-
-            # OUTCOME-BASED DETECTION (Prompt Injection)
-            if "1234" in reply or "admin_pass" in reply or "12345" in reply:
-                response_data["challenge_solved"] = "Prompt Injection"
-
-            return JSONResponse(response_data)
     except httpx.ConnectError:
         return JSONResponse({
             "reply": "The AI assistant is currently offline. Make sure Ollama is running (`ollama serve`) and the llama3.2 model is installed (`ollama pull llama3.2`)."
+        })
+    except httpx.TimeoutException:
+        # Ollama timed out. If the message was a known attack attempt, return a
+        # deterministic fallback so the challenge still works — the simulation
+        # layer inside _build_chat_response will augment the seed reply.
+        if attack_type is not None:
+            try:
+                seed = _timeout_fallback_reply(attack_type)
+                return JSONResponse(await _build_chat_response(seed, attack_type, request))
+            except Exception:
+                pass  # if the fallback itself fails, fall through to generic message
+        return JSONResponse({
+            "reply": "The AI took too long to respond. The model may be busy — please try again."
         })
     except (KeyError, ValueError):
         return JSONResponse({
